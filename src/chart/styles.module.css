@@ -1,0 +1,4 @@
+.main {
+  @apply absolute inset-0;
+  @apply border border-red-500;
+}
