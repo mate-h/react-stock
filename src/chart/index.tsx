@@ -4,6 +4,7 @@ import classes from './styles.module.css'
 import { Keyed, ChartSource, ChartChild, GetCandles } from './types'
 import { get, set } from 'lodash'
 import React from 'react'
+import { getTradingHours } from './lib'
 
 const sourcesAtom = atom<Keyed<ChartSource>>({})
 const useSources = () => useAtom(sourcesAtom)
@@ -24,15 +25,30 @@ export const Chart = ({ children }: ChartProps) => {
   /** Chart id */
   const id = useMemo(() => uid(), [])
   /** Chart source */
-  const source = Object.values(sources)[0]
   useEffect(() => {
+    const source = Object.values(sources).find(({ chartId }) => chartId === id)
+    console.log(source, id)
     const l = Object.keys(sources).length
-    if (l === 0) {
+    if (!source) {
       error('current source has not been set using the <Source> component')
+      return
     }
     if (l > 1) {
       warn('more than one source has been set, using the first one')
     }
+
+    async function load() {
+      const {preMarket, marketOpen, afterHours} = getTradingHours()
+      preMarket.open.setDate(preMarket.open.getDate() - 1)
+      afterHours.close.setDate(afterHours.close.getDate() - 1)
+      const candles = await source!.getCandles({
+        symbol: { name: 'BINANCE:BTCUSDT', type: 'crypto' },
+        range: [preMarket.open, afterHours.close],
+        resolution: '5m',
+      })
+      console.log(candles.length + ' results')
+    }
+    load()
   }, [sources])
 
   const childrenWithProps = React.Children.map(children, (child) => {
@@ -49,17 +65,15 @@ export const Chart = ({ children }: ChartProps) => {
 /**
  * Generic data source provider component
  */
-export const Source = (props: {
-  getCandles: GetCandles
-}) => {
+export const Source = (props: { getCandles: GetCandles }) => {
   const [sources, setSources] = useSources()
   const { chartId, getCandles } = props as unknown as ChartSource
   const id = useMemo(() => uid(), [])
-  
+
   // chart id from parent
   useEffect(() => {
     if (!get(sources, id)) {
-      // setSources(set(sources, id, source))
+      setSources(set(sources, id, props))
     }
   }, [sources])
   return <></>

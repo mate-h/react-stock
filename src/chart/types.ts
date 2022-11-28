@@ -4,6 +4,7 @@ export type Keyed<T> = {
 
 export interface ChartSymbol {
   name: string
+  type: 'crypto'|'stock'
 }
 
 interface CandleDatum {
@@ -24,7 +25,7 @@ export type CandleResolution =
   | '1h'
   | '1d'
   | '1w'
-  | '1m'
+  | '1M'
 
 export interface ChartChild {
   chartId: string
