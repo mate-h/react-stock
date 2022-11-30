@@ -2,11 +2,6 @@ export type Keyed<T> = {
   [name: string]: T
 }
 
-export interface ChartSymbol {
-  name: string
-  type: 'crypto'|'stock'
-}
-
 interface CandleDatum {
   date: Date
   open: number
@@ -46,7 +41,8 @@ export interface ChartType {
 }
 
 export type GetCandles = (props: {
-  symbol: ChartSymbol
+  symbol: string
+  type: 'crypto' | 'stock'
   range: [Date, Date]
   resolution: CandleResolution
 }) => Promise<CandleDatum[]>

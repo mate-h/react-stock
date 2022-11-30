@@ -38,13 +38,12 @@ export const Chart = ({ children }: ChartProps) => {
     }
 
     async function load() {
-      const {preMarket, marketOpen, afterHours} = getTradingHours()
-      preMarket.open.setDate(preMarket.open.getDate() - 1)
-      afterHours.close.setDate(afterHours.close.getDate() - 1)
+      const { preMarket, marketOpen, afterHours } = getTradingHours()
       const candles = await source!.getCandles({
-        symbol: { name: 'BINANCE:BTCUSDT', type: 'crypto' },
+        symbol: 'BINANCE:BTCUSDT',
+        type: 'crypto',
         range: [preMarket.open, afterHours.close],
-        resolution: '5m',
+        resolution: '1m',
       })
       console.log(candles.length + ' results')
     }

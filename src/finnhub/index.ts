@@ -1,4 +1,4 @@
-import { CandleResolution, GetCandles } from './chart/types'
+import { CandleResolution, GetCandles } from '../chart/types'
 
 // finnhub module
 const apiRoot = 'https://finnhub.io/api/v1'
@@ -28,22 +28,26 @@ export function getResolution(resolution: CandleResolution): string {
   return lookup[resolution] || '1'
 }
 
-export const getCandles: GetCandles = async ({ symbol, resolution, range }) => {
+export const getCandles: GetCandles = async ({
+  symbol,
+  type,
+  resolution,
+  range,
+}) => {
   function getUrl() {
-    let path = symbol.type
-    let symbolName = symbol.name
+    let symbolName = symbol
     const msec = (sec: number) => Math.floor(sec / 1000)
     let from = msec(range[0].getTime())
     let to = msec(range[1].getTime())
     let res = getResolution(resolution)
-    return `${apiRoot}/${path}/candle?symbol=${symbolName}&resolution=${res}&from=${from}&to=${to}&token=${apiToken}`
+    return `${apiRoot}/${type}/candle?symbol=${symbolName}&resolution=${res}&from=${from}&to=${to}&token=${apiToken}`
   }
 
   const candles = (await fetch(getUrl()).then((res) =>
     res.json()
   )) as FinnhubResponse
 
-  if (candles.s !== "ok") {
+  if (candles.s !== 'ok') {
     return []
   }
 

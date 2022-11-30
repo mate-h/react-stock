@@ -1,5 +1,6 @@
 import { Chart, Source } from './chart'
 import { getCandles } from './finnhub'
+import { Icon } from './icon'
 
 function App() {
   return (
@@ -13,6 +14,8 @@ function App() {
       <Chart>
         <Source getCandles={getCandles} />
       </Chart>
+
+      <Icon name="checkmark" />
     </main>
   )
 }
