@@ -5,12 +5,11 @@ export type IconName = keyof typeof lookup;
 
 type Props = {
   name: IconName;
-  // style?: string;
-  className?: string;
+  class?: string;
   tag?: string;
   [key: string]: any;
 };
-export const Icon = ({ tag = "i", name, className: c, style: s, ...rest }: Props) => {
+export const Icon = ({ tag = "i", name, class: c, style: s, ...rest }: Props) => {
   return createElement(
     tag,
     {

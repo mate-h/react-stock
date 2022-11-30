@@ -1,29 +1,115 @@
 :root {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  color-scheme: light dark;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+:root {
+  /* CSS Variables */
+  --primary-50: #e1f4fd;
+  --primary-100: #b2e2fa;
+  --primary-200: #80d0f7;
+  --primary-300: #4fbdf2;
+  --primary-400: #2cb0f0;
+  --primary-500: #11a2ed;
+  --primary-600: #1194de;
+  --primary-700: #1081ca;
+  --primary-800: #0e70b6;
+  --primary-900: #0b5194;
+
+  --gray-50: #e6ebf0;
+  --gray-100: #c4ced6;
+  --gray-200: #a0adb9;
+  --gray-300: #7b8d9d;
+  --gray-400: #617788;
+  --gray-500: #476174;
+  --gray-600: #3c5365;
+  --gray-700: #2e4150;
+  --gray-800: #202f3b;
+  --gray-900: #101c25;
+
+  --green-50: #e0f2f1;
+  --green-100: #b2dfdb;
+  --green-200: #80cbc4;
+  --green-300: #4db6ac;
+  --green-400: #26a69a;
+  --green-500: #009688;
+  --green-600: #00897b;
+  --green-700: #00796b;
+  --green-800: #00695c;
+  --green-900: #004d40;
+
+  --red-50: #ffebee;
+  --red-100: #ffcdd2;
+  --red-200: #ef9a99;
+  --red-300: #e57372;
+  --red-400: #ef534f;
+  --red-500: #f44334;
+  --red-600: #e53934;
+  --red-700: #d32f2e;
+  --red-800: #c62827;
+  --red-900: #b71c1b;
+}
+
+/* Dark / light mode */
+:root {
+  color-scheme: light;
+  --background-color: var(--gray-50);
+  --surface-color: #ffffff;
+  --primary-color: var(--primary-600);
+  --label-tuple: 0, 0, 0;
+  --label-opacity: 0.87;
+  color: rgba(var(--label-tuple), var(--label-opacity));
+}
+
+:root.dark {
+  color-scheme: dark;
+  --background-color: var(--gray-900);
+  --surface-color: var(--gray-800);
+  --primary-color: var(--primary-400);
+  --label-tuple: 255, 255, 255;
+  --label-opacity: 1;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    background-color: #212121;
-    color: white;
+    color-scheme: dark;
+    --background-color: var(--gray-900);
+    --surface-color: var(--gray-800);
+    --primary-color: var(--primary-400);
+    --label-tuple: 255, 255, 255;
+    --label-opacity: 1;
   }
 }
 
+:root {
+  background-color: var(--background-color);
+}
+
+:root,
 body {
-  margin: 0;
-  padding: 0;
+  height: 100%;
 }
 
 @font-face {
-  font-family: "Symbols";
+  font-family: 'Symbols';
   font-weight: 500;
   font-style: normal;
-  src: url("/symbols.woff2") format("woff2");
+  src: url('/symbols.woff2') format('woff2');
 }
 
 i.icon {
-  font-family: "Symbols";
+  font-family: 'Symbols';
   /* font-size: 24px; */
   font-style: normal;
+}
+
+#headlessui-portal-root {
+  position: fixed;
+  top: 0;
+  z-index: 99999;
+}
+
+/* disable -webkit-tap-highlight-color */
+body {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
 }

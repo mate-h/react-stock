@@ -1,4 +1,5 @@
 import { Chart, Source } from './chart'
+import Palette from './chart/palette'
 import { getCandles } from './finnhub'
 import { Icon } from './icon'
 
@@ -15,7 +16,16 @@ function App() {
         <Source getCandles={getCandles} />
       </Chart>
 
-      <Icon name="checkmark" />
+      <section class="space-y-2">
+        <p class="font-medium space-x-2 text-primary-400">
+          <Icon name="lock" />
+          <span>Primary 400</span>
+        </p>
+
+        <Palette color="primary" />
+        <Palette color="green" />
+        <Palette color="red" />
+      </section>
     </main>
   )
 }
