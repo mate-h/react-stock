@@ -2,7 +2,7 @@ export type Keyed<T> = {
   [name: string]: T
 }
 
-interface CandleDatum {
+export interface CandleDatum {
   date: Date
   open: number
   close: number

@@ -1,10 +1,17 @@
 import { atom, useAtom } from 'jotai'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import classes from './styles.module.css'
-import { Keyed, ChartSource, ChartChild, GetCandles } from './types'
+import {
+  Keyed,
+  ChartSource,
+  ChartChild,
+  GetCandles,
+  CandleDatum,
+} from './types'
 import { get, set } from 'lodash'
 import React from 'react'
 import { getTradingHours } from './lib'
+import Candles from './candles'
 
 const sourcesAtom = atom<Keyed<ChartSource>>({})
 const useSources = () => useAtom(sourcesAtom)
@@ -24,10 +31,11 @@ export const Chart = ({ children }: ChartProps) => {
   const [sources, setSources] = useSources()
   /** Chart id */
   const id = useMemo(() => uid(), [])
+  const [candles, setCandles] = useState<CandleDatum[]>([])
   /** Chart source */
   useEffect(() => {
     const source = Object.values(sources).find(({ chartId }) => chartId === id)
-    console.log(source, id)
+    // console.log(source, id)
     const l = Object.keys(sources).length
     if (!source) {
       error('current source has not been set using the <Source> component')
@@ -45,7 +53,8 @@ export const Chart = ({ children }: ChartProps) => {
         range: [preMarket.open, afterHours.close],
         resolution: '1m',
       })
-      console.log(candles.length + ' results')
+      // console.log(candles.length + ' results')
+      setCandles(candles);
     }
     load()
   }, [sources])
@@ -58,7 +67,12 @@ export const Chart = ({ children }: ChartProps) => {
     return child
   })
 
-  return <div class={classes.main}>{childrenWithProps}</div>
+  return (
+    <div class={classes.main}>
+      {childrenWithProps}
+      <Candles candles={candles} />
+    </div>
+  )
 }
 
 /**
