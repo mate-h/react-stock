@@ -5,4 +5,8 @@ declare namespace React {
     class?: string;
     for?: string;
   }
+  interface SVGAttributes<T> {
+    class?: string;
+    for?: string;
+  }
 }

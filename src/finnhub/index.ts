@@ -47,7 +47,7 @@ export const getCandles: GetCandles = async ({
     if (mock) return mockData
     return (await fetch(getUrl()).then((res) => res.json())) as FinnhubResponse
   }
-  const candles = await getCandles(true)
+  const candles = await getCandles(false)
 
   if (candles.s !== 'ok') {
     return []

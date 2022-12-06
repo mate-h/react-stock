@@ -1,0 +1,25 @@
+.main {
+  @apply bg-transparent text-label placeholder-medium text-base sm:text-sm rounded-lg;
+  @apply h-10 sm:h-8 px-3 sm:px-2;
+  @apply border-1 border-transparent;
+  @apply focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary;
+}
+
+.outlined {
+  @apply border-divider;
+}
+
+.filled {
+  @apply bg-surface;
+}
+
+.select {
+  @apply pr-8;
+  background-image: url(/public/chevron.down.svg);
+  background-size: 1rem;
+}
+@media (min-width: 640px) {
+  .select {
+    background-size: 0.875rem;
+  }
+}

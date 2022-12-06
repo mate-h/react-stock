@@ -50,10 +50,10 @@ export default defineConfig({
         'red-800': '#c62827',
         'red-900': '#b71c1b',
         label: 'rgba(var(--label-tuple), var(--label-opacity))',
-        'label-medium': 'rgba(var(--label-tuple), .6)',
-        'label-disabled': 'rgba(var(--label-tuple), .38)',
-        'label-divider': 'rgba(var(--label-tuple), .12)',
-        'label-well': 'rgba(var(--label-tuple), .06)',
+        medium: 'rgba(var(--label-tuple), .6)',
+        disabled: 'rgba(var(--label-tuple), .38)',
+        divider: 'rgba(var(--label-tuple), .12)',
+        well: 'rgba(var(--label-tuple), .06)',
       },
     },
   },
@@ -71,8 +71,6 @@ export default defineConfig({
           },
           '&:focus': {
             '--state-opacity': '0.12',
-            boxShadow: '0 0 0 2px var(--primary-600)',
-            outline: 'none !important',
           },
           "&:disabled, &[aria-disabled='true']": {
             '--state-opacity': '0.0',

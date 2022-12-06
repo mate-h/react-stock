@@ -1,4 +1,4 @@
 .main {
-  @apply absolute inset-0 !m-0;
+  @apply absolute inset-0 !m-0 -z-1;
   @apply border border-red-500;
 }
