@@ -7,6 +7,9 @@ import Button from './input/button'
 import { Select } from './input/select'
 import Menu from './input/menu'
 import Tabs from './tabs'
+import { useState } from 'react'
+import Dialog from './dialog'
+import Picker from './input/picker'
 
 function Stuff() {
   return (
@@ -32,6 +35,7 @@ function App() {
     { name: 'Option 3' },
   ]
   const mockTabs = [{ name: 'Tab 1' }, { name: 'Tab 2' }, { name: 'Tab 3' }]
+  
   return (
     <main class="container mx-auto p-6 space-y-6 h-full">
       <h1 class="font-mono text-xl">📈 react-stock</h1>
@@ -46,14 +50,14 @@ function App() {
         <Select options={mockOptions} />
         <Select options={mockOptions} type="outlined" />
         <Select native options={mockOptions} />
-        <Button primary>Push me</Button>
         <Tabs tabs={mockTabs} />
-        <Menu options={mockTabs}/>
+        <Menu options={mockTabs} />
+        <Picker options={mockTabs}/>
       </section>
 
-      <Chart>
+      {/* <Chart>
         <Source getCandles={getCandles} />
-      </Chart>
+      </Chart> */}
     </main>
   )
 }

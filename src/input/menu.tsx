@@ -54,8 +54,8 @@ export default function ({
           )}
         >
           <span class="inline-block px-1 py-1 w-full">
-            {options.map((option) => (
-              <Menu.Item>
+            {options.map((option, i) => (
+              <Menu.Item key={i}>
                 {({ active }) => (
                   <button
                     class={`${

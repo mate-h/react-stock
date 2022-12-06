@@ -1,0 +1,3 @@
+.card {
+  @apply bg-surface shadow-lg border border-divider rounded-xl overflow-hidden;
+}
