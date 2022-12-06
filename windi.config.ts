@@ -59,6 +59,8 @@ export default defineConfig({
   },
   plugins: [
     require('windicss/plugin/forms'),
+    require('windicss/plugin/typography'),
+    require('windicss/plugin/scroll-snap'),
     plugin(({ addUtilities }) => {
       addUtilities({
         '.states': {

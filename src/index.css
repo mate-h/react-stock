@@ -86,9 +86,12 @@
 }
 
 :root,
+#root,
 body {
   height: 100%;
 }
+
+
 
 @font-face {
   font-family: 'Symbols';

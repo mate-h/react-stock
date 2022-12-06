@@ -1,8 +1,10 @@
+import { Listbox } from '@headlessui/react'
 import { omit } from 'lodash'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { getClasses, InputProps } from '.'
 import { Icon, IconName } from '../icon'
 import styles from './index.module.css'
+import SelectOptions from './select-options'
 
 type SelectOptionName = {
   name: string
@@ -18,6 +20,7 @@ export type SelectProps = InputProps & {
   native?: boolean
   selected?: number
   setSelected?: (selected: number) => void
+  align?: 'start' | 'end'
 }
 
 export function Select(props: SelectProps) {
@@ -35,13 +38,26 @@ export function Select(props: SelectProps) {
     setSelected(e.target.selectedIndex)
   }
 
-  const { native = true } = props
-  if (!native || hasIcon) {
-    return <button class={getClasses(props)} />
+  const { native = false } = props
+  if (native || hasIcon) {
+    return (
+      <Listbox value={selected} onChange={setSelected}>
+        <span className="inline-block relative w-40">
+          <Listbox.Button
+            className={getClasses(props, 'states w-full flex items-center justify-between')}
+          >
+            <span class="truncate">{props.options[selected].name}</span>
+            <Icon name="chevron.up.chevron.down" class="pl-2 text-medium" />
+          </Listbox.Button>
+
+          <SelectOptions {...props} />
+        </span>
+      </Listbox>
+    )
   }
   return (
     <select
-      {...omit(props, 'type', 'filled', 'outlined', 'options')}
+      {...omit(props, 'type', 'filled', 'outlined', 'options', 'native')}
       class={getClasses(props, 'states bg-states', styles.select)}
       onChange={onChange}
       value={selected}

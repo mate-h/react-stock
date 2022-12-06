@@ -13,6 +13,10 @@
   @apply bg-surface;
 }
 
+.primary {
+  @apply bg-primary-700 text-white label-white;
+}
+
 .select {
   @apply pr-8;
   background-image: url(/public/chevron.down.svg);
@@ -22,4 +26,8 @@
   .select {
     background-size: 0.875rem;
   }
+}
+
+.listbox {
+  @apply absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-surface py-1 text-base shadow-lg border border-divider focus:outline-none sm:text-sm;
 }

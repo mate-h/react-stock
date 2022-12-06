@@ -16,7 +16,7 @@ export type Props = React.DetailedHTMLProps<
 > &
   InputProps
 
-export function getClasses(props: InputProps,...moreClasses: string[]) {
+export function getClasses(props: InputProps,...moreClasses: (string|boolean|undefined)[]) {
   const { type = 'filled', filled, outlined } = props
   return classes(
     styles.main,

@@ -3,6 +3,7 @@ import Palette from './chart/palette'
 import { getCandles } from './finnhub'
 import { Icon } from './icon'
 import Input from './input'
+import Button from './input/button'
 import { Select } from './input/select'
 import Menu from './menu/example'
 
@@ -26,8 +27,13 @@ function Stuff() {
 }
 
 function App() {
+  const mockOptions = [
+    { name: 'Option 1' },
+    { name: 'Option 2' },
+    { name: 'Option 3' },
+  ]
   return (
-    <main class="container mx-auto p-6 space-y-6">
+    <main class="container mx-auto p-6 space-y-6 h-full">
       <h1 class="font-mono text-xl">📈 react-stock</h1>
       <p>
         Fully modular financial charts made from interactive react SVG
@@ -37,11 +43,12 @@ function App() {
       <section class="space-x-2">
         <Input placeholder="Symbol" />
         <Input placeholder="Timeframe" type="outlined" />
-        <Select options={[{ name: 'option 1' }]} />
-        <Select
-          options={[{ name: 'option 1' }, { name: 'option 2' }]}
-          type="outlined"
-        />
+        <Select options={mockOptions} />
+        <Select options={mockOptions} type="outlined" />
+        <Select native options={mockOptions} />
+        <Button primary>
+          Push me
+        </Button>
       </section>
 
       <Chart>
