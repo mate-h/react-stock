@@ -3,6 +3,7 @@ import { Fragment } from 'react'
 import { Icon } from '../icon'
 import { SelectProps } from './select'
 import styles from './index.module.css'
+import { classes } from '../classes'
 
 export default function (props: SelectProps) {
   return (
@@ -18,12 +19,12 @@ export default function (props: SelectProps) {
             key={i}
             className={({ active }) =>
               `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                active ? 'bg-well text-primary' : 'text-medium'
+                active ? 'bg-primary-700 text-white' : 'text-medium'
               }`
             }
             value={i}
           >
-            {({ selected }) => (
+            {({ selected, active }) => (
               <>
                 <span
                   class={`block truncate ${
@@ -33,8 +34,13 @@ export default function (props: SelectProps) {
                   {option.name}
                 </span>
                 {selected ? (
-                  <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
-                    <Icon name="checkmark" class="h-5 w-5" aria-hidden="true" />
+                  <span
+                    class={classes(
+                      active ? 'text-white' : 'text-primary',
+                      'absolute inset-y-0 left-0 flex items-center pl-3'
+                    )}
+                  >
+                    <Icon name="checkmark" class="mr-2" aria-hidden="true" />
                   </span>
                 ) : null}
               </>

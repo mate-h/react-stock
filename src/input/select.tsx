@@ -44,7 +44,11 @@ export function Select(props: SelectProps) {
       <Listbox value={selected} onChange={setSelected}>
         <span className="inline-block relative w-40">
           <Listbox.Button
-            className={getClasses(props, 'states w-full flex items-center justify-between')}
+            className={getClasses(
+              props,
+              'states w-full flex items-center justify-between',
+              styles.select
+            )}
           >
             <span class="truncate">{props.options[selected].name}</span>
             <Icon name="chevron.up.chevron.down" class="pl-2 text-medium" />
@@ -58,7 +62,12 @@ export function Select(props: SelectProps) {
   return (
     <select
       {...omit(props, 'type', 'filled', 'outlined', 'options', 'native')}
-      class={getClasses(props, 'states bg-states', styles.select)}
+      class={getClasses(
+        props,
+        'states bg-states',
+        styles.chevron,
+        styles.select
+      )}
       onChange={onChange}
       value={selected}
     >

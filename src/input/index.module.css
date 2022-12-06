@@ -1,5 +1,5 @@
 .main {
-  @apply bg-transparent text-label placeholder-medium text-base sm:text-sm rounded-lg;
+  @apply bg-transparent text-label placeholder-medium hover:placeholder-label text-base sm:text-sm rounded-lg;
   @apply h-10 sm:h-8 px-3 sm:px-2;
   @apply border-1 border-transparent;
   @apply focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary;
@@ -17,13 +17,18 @@
   @apply bg-primary-700 text-white label-white;
 }
 
-.select {
+.chevron {
   @apply pr-8;
-  background-image: url(/public/chevron.down.svg);
+  background-image: url(/chevron.down.svg);
   background-size: 1rem;
 }
+
+.select {
+  
+}
+
 @media (min-width: 640px) {
-  .select {
+  .chevron {
     background-size: 0.875rem;
   }
 }
