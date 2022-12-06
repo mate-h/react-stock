@@ -5,13 +5,12 @@ import { Icon } from './icon'
 import Input from './input'
 import Button from './input/button'
 import { Select } from './input/select'
-import Menu from './menu/example'
+import Menu from './input/menu'
+import Tabs from './tabs'
 
 function Stuff() {
   return (
     <>
-      <Menu />
-
       <section class="space-y-2">
         <p class="font-medium space-x-2 text-primary-400">
           <Icon name="lock" />
@@ -32,6 +31,7 @@ function App() {
     { name: 'Option 2' },
     { name: 'Option 3' },
   ]
+  const mockTabs = [{ name: 'Tab 1' }, { name: 'Tab 2' }, { name: 'Tab 3' }]
   return (
     <main class="container mx-auto p-6 space-y-6 h-full">
       <h1 class="font-mono text-xl">📈 react-stock</h1>
@@ -46,9 +46,9 @@ function App() {
         <Select options={mockOptions} />
         <Select options={mockOptions} type="outlined" />
         <Select native options={mockOptions} />
-        <Button primary>
-          Push me
-        </Button>
+        <Button primary>Push me</Button>
+        <Tabs tabs={mockTabs} />
+        <Menu options={mockTabs}/>
       </section>
 
       <Chart>
