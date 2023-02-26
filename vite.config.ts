@@ -4,6 +4,7 @@ import windi from 'vite-plugin-windicss'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: "./",
   plugins: [
     react({
       babel: {
