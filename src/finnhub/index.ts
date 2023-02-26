@@ -1,5 +1,5 @@
 import { CandleResolution, GetCandles } from '../chart/types'
-import mockData from './mock.json'
+// import mockData from './mock.json'
 
 // finnhub module
 const apiRoot = 'https://finnhub.io/api/v1'
@@ -44,7 +44,7 @@ export const getCandles: GetCandles = async ({
     return `${apiRoot}/${type}/candle?symbol=${symbolName}&resolution=${res}&from=${from}&to=${to}&token=${apiToken}`
   }
   async function getCandles(mock = false) {
-    if (mock) return mockData
+    // if (mock) return mockData
     return (await fetch(getUrl()).then((res) => res.json())) as FinnhubResponse
   }
   const candles = await getCandles(false)
