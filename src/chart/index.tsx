@@ -1,20 +1,12 @@
-import { atom, useAtom } from 'jotai'
 import { useEffect, useMemo, useState } from 'react'
 import classes from './styles.module.css'
-import {
-  Keyed,
-  ChartSource,
-  ChartChild,
-  GetCandles,
-  CandleDatum,
-} from './types'
-import { get, set } from 'lodash'
+import { GetCandles, CandleDatum } from './types'
+import { clone, get, merge, set } from 'lodash'
 import React from 'react'
 import { getTradingHours } from './lib'
 import Candles from './candles'
-
-const sourcesAtom = atom<Keyed<ChartSource>>({})
-const useSources = () => useAtom(sourcesAtom)
+import { useChart, useSources } from './store'
+import { uid } from './util'
 
 function error(s: string) {
   console.error(`[react-stock] ${s}`)
@@ -22,20 +14,18 @@ function error(s: string) {
 function warn(s: string) {
   console.warn(`[react-stock] ${s}`)
 }
-const uid = () => Math.random().toString(36).substring(2, 9)
 
 export type ChartProps = {
   children?: React.ReactNode
 }
-export const Chart = ({ children }: ChartProps) => {
-  const [sources, setSources] = useSources()
-  /** Chart id */
-  const id = useMemo(() => uid(), [])
+
+export function CandleData() {
+  const [sources] = useSources()
+  const [chart] = useChart()
   const [candles, setCandles] = useState<CandleDatum[]>([])
   /** Chart source */
   useEffect(() => {
-    const source = Object.values(sources).find(({ chartId }) => chartId === id)
-    // console.log(source, id)
+    const source = Object.values(sources).find((s) => s.chartId === chart.id)
     const l = Object.keys(sources).length
     if (!source) {
       error('current source has not been set using the <Source> component')
@@ -47,46 +37,40 @@ export const Chart = ({ children }: ChartProps) => {
 
     async function load() {
       const { preMarket, marketOpen, afterHours } = getTradingHours()
+      const now = new Date()
+      const hourAgo = new Date(now.getTime() - 1 * 60 * 60 * 1000)
       const candles = await source!.getCandles({
         symbol: 'BINANCE:BTCUSDT',
         type: 'crypto',
-        range: [preMarket.open, afterHours.close],
+        range: [hourAgo, now],
         resolution: '1m',
       })
-      // console.log(candles.length + ' results')
-      setCandles(candles);
+      console.log(candles.length + ' results')
+      setCandles(candles)
     }
     load()
-  }, [sources])
+  }, [sources, chart])
+  return <Candles candles={candles} />
+}
 
-  const childrenWithProps = React.Children.map(children, (child) => {
-    if (React.isValidElement(child)) {
-      const c = child as unknown as React.FunctionComponentElement<ChartChild>
-      return React.cloneElement<ChartChild>(c, { chartId: id })
-    }
-    return child
-  })
-
-  return (
-    <div class={classes.main}>
-      {childrenWithProps}
-      <Candles candles={candles} />
-    </div>
-  )
+export const Chart = ({ children }: ChartProps) => {
+  return <div class={classes.main}>{children}</div>
 }
 
 /**
  * Generic data source provider component
  */
 export const Source = (props: { getCandles: GetCandles }) => {
+  const [chart] = useChart()
   const [sources, setSources] = useSources()
-  const { chartId, getCandles } = props as unknown as ChartSource
   const id = useMemo(() => uid(), [])
 
   // chart id from parent
   useEffect(() => {
     if (!get(sources, id)) {
-      setSources(set(sources, id, props))
+      setSources(
+        set(sources, id, merge(clone(props), { id, chartId: chart.id }))
+      )
     }
   }, [sources])
   return <></>

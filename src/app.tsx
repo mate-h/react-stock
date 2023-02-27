@@ -1,4 +1,4 @@
-import { Chart, Source } from './chart'
+import { CandleData, Chart, Source } from './chart'
 import Palette from './chart/palette'
 import { getCandles } from './finnhub'
 import { Icon } from './icon'
@@ -35,29 +35,34 @@ function App() {
     { name: 'Option 3' },
   ]
   const mockTabs = [{ name: 'Tab 1' }, { name: 'Tab 2' }, { name: 'Tab 3' }]
-  
+
   return (
-    <main class="container mx-auto p-6 space-y-6 h-full">
-      <h1 class="font-mono text-xl">📈 react-stock</h1>
-      <p>
-        Fully modular financial charts made from interactive react SVG
-        components styled with tailwind css.
-      </p>
+    <main class="container mx-auto p-6 space-y-6 h-full flex flex-col">
+      <div class="space-y-6">
+        <h1 class="font-mono text-xl">📈 react-stock</h1>
+        <p>
+          Fully modular financial charts made from interactive react SVG
+          components styled with tailwind css.
+        </p>
 
-      <section class="space-x-2">
-        <Input placeholder="Symbol" />
-        <Input placeholder="Timeframe" type="outlined" />
-        <Select options={mockOptions} />
-        <Select options={mockOptions} type="outlined" />
-        <Select native options={mockOptions} />
-        <Tabs tabs={mockTabs} />
-        <Menu options={mockTabs} />
-        <Picker options={mockTabs}/>
-      </section>
+        <section class="space-x-2">
+          <Input placeholder="Symbol" />
+          <Input placeholder="Timeframe" type="outlined" />
+          <Select options={mockOptions} />
+          <Select options={mockOptions} type="outlined" />
+          <Select native options={mockOptions} />
+          <Tabs tabs={mockTabs} />
+          <Menu options={mockTabs} />
+          <Picker options={mockTabs} />
+        </section>
+      </div>
 
-      {/* <Chart>
-        <Source getCandles={getCandles} />
-      </Chart> */}
+      <div class="relative flex-1">
+        <Chart>
+          <Source getCandles={getCandles} />
+          <CandleData />
+        </Chart>
+      </div>
     </main>
   )
 }
