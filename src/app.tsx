@@ -39,7 +39,20 @@ function App() {
   return (
     <main class="container mx-auto p-6 space-y-6 h-full flex flex-col">
       <div class="space-y-6">
-        <h1 class="font-mono text-xl">📈 react-stock</h1>
+        <div class="flex">
+          <h1 class="font-mono text-xl flex-1">📈 react-stock</h1>
+          <a
+            href="https://github.com/mate-h/react-stock"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <img
+              src="/github.svg"
+              class="inline w-6 h-6 filter invert"
+              alt="github"
+            />
+          </a>
+        </div>
         <p>
           Fully modular financial charts made from interactive react SVG
           components styled with tailwind css.
