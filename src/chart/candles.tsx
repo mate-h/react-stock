@@ -7,11 +7,12 @@ type Props = {
 }
 
 export default ({ candles }: Props) => {
-  console.log(candles.length + ' results')
+  // console.log(candles.length + ' results')
+  // console.log(candles)
 
   const [unit, setUnit] = useState(10)
 
-  const len = 40 //candles.length
+  const len = candles.length
   const data = candles.filter((e, i) => i < len)
 
   const norm = (x: number, min: number, max: number) => {
@@ -19,9 +20,6 @@ export default ({ candles }: Props) => {
   }
   /** percent */
   const p = (x: number) => `${x * 100}%`
-
-  // const h =
-  const t = (d?: Date) => (d ? d.getTime() : 0)
 
   const yflat = flatten(data.map((d) => [d.open, d.close, d.high, d.low]))
   const ymax = max(yflat) || 0
@@ -33,19 +31,18 @@ export default ({ candles }: Props) => {
   const xmin = min(data.map((d) => d.date.getTime())) || 0
   const xmax = max(data.map((d) => d.date.getTime())) || 0
   const xnorm = (d: CandleDatum) => {
-    return norm(selectx(d), xmin, xmax)
+    return 1 - norm(selectx(d), xmin, xmax)
   }
   function bar(d: CandleDatum) {
     const x = xnorm(d)
     const y = ynorm(d.close)
     const y2 = ynorm(d.open)
     const y3 = Math.min(y, y2)
-    const y4 = Math.max(y, y2)
     const high = ynorm(d.high)
     const low = ynorm(d.low)
-    const color = d.close > d.open ? 'red' : 'green'
+    const color = d.close < d.open ? 'red' : 'green'
     const w = 1 / len
-    const h = y4 - y3
+    const h = Math.abs(y - y2)
     return (
       <g key={d.date.getTime()}>
         <rect
@@ -73,9 +70,9 @@ export default ({ candles }: Props) => {
   }
   function line([d1, d2]: CandleDatum[]) {
     const x1 = xnorm(d1)
-    const y1 = ynorm(d1.close)
+    const y1 = ynorm(d1.open)
     const x2 = xnorm(d2)
-    const y2 = ynorm(d2.close)
+    const y2 = ynorm(d2.open)
     return (
       <line
         class="stroke-white"
