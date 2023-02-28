@@ -1,9 +1,32 @@
-import { useEffect, useState } from 'react'
+import { RefObject, useEffect, useMemo, useRef, useState } from 'react'
 import { CandleDatum } from './types'
 import { min, max, chunk, flatten } from 'lodash'
 import { classes } from '../classes'
 type Props = {
   candles: CandleDatum[]
+}
+
+const usePointer = ({
+  node,
+}: {
+  node: RefObject<HTMLElement | SVGElement>
+}) => {
+  // implement pointer events here
+  const [state, setState] = useState({ x: 0.5, y: 0.5 })
+  useEffect(() => {
+    const listener = (e: MouseEvent) => {
+      // calculate the relative position to the node
+      if (!node.current) return
+
+      const rect = node.current.getBoundingClientRect()
+      const x = (e.clientX - rect.left) / rect.width
+      const y = (e.clientY - rect.top) / rect.height
+      setState({ x, y })
+    }
+    window.addEventListener('pointermove', listener)
+    return () => window.removeEventListener('pointermove', listener)
+  }, [])
+  return state
 }
 
 export default ({ candles }: Props) => {
@@ -31,7 +54,8 @@ export default ({ candles }: Props) => {
   const xmin = min(data.map((d) => d.date.getTime())) || 0
   const xmax = max(data.map((d) => d.date.getTime())) || 0
   const xnorm = (d: CandleDatum) => {
-    return 1 - norm(selectx(d), xmin, xmax)
+    const oneMinute = 1000 * 60
+    return 1 - norm(selectx(d), xmin, xmax + oneMinute)
   }
   function bar(d: CandleDatum) {
     const x = xnorm(d)
@@ -93,10 +117,57 @@ export default ({ candles }: Props) => {
     }, [] as CandleDatum[]),
     2
   ).map(line)
+
+  const svgRef = useRef(null)
+
+  const { x, y } = usePointer({ node: svgRef })
+
+  const l = len - 1
+  const xSnapped = useMemo(() => (Math.round(x * l) + 0.5) / l, [x, l])
+
+  const PriceAxis = () => {
+    return (
+      <g>
+        <text x="0%" y="0%" class="fill-label" dominantBaseline="middle">
+          0
+        </text>
+        <text x="0%" y="100%" class="fill-label" dominantBaseline="middle">
+          100
+        </text>
+      </g>
+    )
+  }
+
   return (
-    <svg className="w-full h-full">
+    <svg className="w-full h-full overflow-visible" ref={svgRef}>
+      <defs>
+        <filter x="0" y="0" width="1" height="1" id="solid">
+          <feFlood flood-color="black" result="bg" />
+          <feMerge>
+            <feMergeNode in="bg" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
       {bars}
-      {lines}
+      {/* {lines} */}
+      <line
+        x1={p(xSnapped)}
+        y1="0%"
+        x2={p(xSnapped)}
+        y2="100%"
+        class="stroke-medium"
+        strokeDasharray={4}
+      />
+      <line
+        x1="0"
+        y1={p(y)}
+        x2="100%"
+        y2={p(y)}
+        class="stroke-medium"
+        strokeDasharray={4}
+      />
+      <PriceAxis />
     </svg>
   )
 }
