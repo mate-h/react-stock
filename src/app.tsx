@@ -47,7 +47,7 @@ function App() {
             rel="noopener noreferrer"
           >
             <img
-              src="/github.svg"
+              src="./github.svg"
               class="inline w-6 h-6 filter invert"
               alt="github"
             />
