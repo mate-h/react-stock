@@ -34,11 +34,14 @@ export interface ChartSourceProps extends ChartChild {
 export interface ChartSource extends ChartChild {
   id: string
   getCandles: GetCandles
+  subscribe: Subscribe
 }
 
 export interface ChartType {
   id: string
 }
+
+export type Subscribe = (listener: (price: number) => void) => void
 
 export type GetCandles = (props: {
   symbol: string

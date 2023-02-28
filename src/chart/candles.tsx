@@ -67,6 +67,11 @@ export default ({ candles }: Props) => {
     const color = d.close < d.open ? 'red' : 'green'
     const w = 1 / len
     const h = Math.abs(y - y2)
+
+    // calculate the exact number of pixels for padding and for bar width
+
+    // bar width should be odd number of pixels
+
     return (
       <g key={d.date.getTime()}>
         <rect
@@ -118,12 +123,12 @@ export default ({ candles }: Props) => {
     2
   ).map(line)
 
-  const svgRef = useRef(null)
+  const svgRef = useRef<SVGSVGElement>(null)
 
   const { x, y } = usePointer({ node: svgRef })
 
   const xSnapped = useMemo(
-    () => (Math.round((x - 0.5 / len) * len) + 0.5) / len,
+    () => Math.min(Math.max((Math.round((x - 0.5 / len) * len) + 0.5) / len, 0), 1),
     [x, len]
   )
 
@@ -131,16 +136,56 @@ export default ({ candles }: Props) => {
     const range = ymax - ymin
     const ycurr = useMemo(() => ymin + range * (1 - y), [y, ymin, ymax])
 
+    if (svgRef.current) {
+      const height = svgRef.current!.getBoundingClientRect().height
+
+      console.log('height', height)
+    }
+
     return (
-      <div class="px-1 relative h-full w-18 overflow-hidden">
+      <div class="flex flex-col">
+        <div class="px-1 relative w-18 overflow-hidden border-l border-divider bg-well flex-1">
+          <p
+            class="h-0 flex items-center text-xs"
+            style={{
+              position: 'absolute',
+              top: p(y),
+            }}
+          >
+            {ycurr.toFixed(2)}
+          </p>
+        </div>
+        <div class="h-6 bg-well" />
+      </div>
+    )
+  }
+
+  const TimeAxis = () => {
+    const range = xmax - xmin
+    const xcurr = useMemo(() => xmin + range * xSnapped, [xSnapped, xmin, xmax])
+
+    function format() {
+      const date = new Date(xcurr)
+      const fmt = new Intl.DateTimeFormat('en', {
+        hour: 'numeric',
+        minute: 'numeric',
+      })
+      let str = ''
+      try {
+        str = fmt.format(date)
+      } catch (e) {}
+      return str
+    }
+    return (
+      <div class="px-1 relative w-full h-6 border-t border-divider bg-well">
         <p
-          class="h-0 flex items-center text-xs"
+          class="flex items-center justify-center w-0 h-full text-xs h-full whitespace-nowrap"
           style={{
             position: 'absolute',
-            top: p(y),
+            left: p(xSnapped),
           }}
         >
-          {ycurr.toFixed(2)}
+          {format()}
         </p>
       </div>
     )
@@ -148,26 +193,29 @@ export default ({ candles }: Props) => {
 
   return (
     <div className="w-full h-full relative flex">
-      <svg className="w-full h-full" ref={svgRef}>
-        {bars}
-        {/* {lines} */}
-        <line
-          x1={p(xSnapped)}
-          y1="0%"
-          x2={p(xSnapped)}
-          y2="100%"
-          class="stroke-medium"
-          strokeDasharray={4}
-        />
-        <line
-          x1="0"
-          y1={p(y)}
-          x2="100%"
-          y2={p(y)}
-          class="stroke-medium"
-          strokeDasharray={4}
-        />
-      </svg>
+      <div className="relative flex-1 flex flex-col">
+        <svg className="w-full h-full" ref={svgRef}>
+          {bars}
+          {/* {lines} */}
+          <line
+            x1={p(xSnapped)}
+            y1="0%"
+            x2={p(xSnapped)}
+            y2="100%"
+            class="stroke-medium"
+            strokeDasharray={4}
+          />
+          <line
+            x1="0"
+            y1={p(y)}
+            x2="100%"
+            y2={p(y)}
+            class="stroke-medium"
+            strokeDasharray={4}
+          />
+        </svg>
+        <TimeAxis />
+      </div>
       <PriceAxis />
     </div>
   )

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import classes from './styles.module.css'
-import { GetCandles, CandleDatum } from './types'
+import { GetCandles, CandleDatum, Subscribe } from './types'
 import { clone, get, merge, set } from 'lodash'
 import React from 'react'
 import { getTradingHours } from './lib'
@@ -45,6 +45,9 @@ export function CandleData() {
         range: [hourAgo, now],
         resolution: '1m',
       })
+      source!.subscribe((price) => {
+        console.log('price', price)
+      })
       console.log(candles.length + ' results')
       setCandles(candles)
     }
@@ -60,7 +63,10 @@ export const Chart = ({ children }: ChartProps) => {
 /**
  * Generic data source provider component
  */
-export const Source = (props: { getCandles: GetCandles }) => {
+export const Source = (props: {
+  getCandles: GetCandles
+  subscribe: Subscribe
+}) => {
   const [chart] = useChart()
   const [sources, setSources] = useSources()
   const id = useMemo(() => uid(), [])

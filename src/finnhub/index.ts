@@ -1,4 +1,5 @@
-import { CandleResolution, GetCandles } from '../chart/types'
+import { atom, useAtom } from 'jotai'
+import { CandleResolution, GetCandles, Subscribe } from '../chart/types'
 // import mockData from './mock.json'
 
 // finnhub module
@@ -61,4 +62,46 @@ export const getCandles: GetCandles = async ({
     close: candles.c[i],
     volume: candles.v[i],
   }))
+}
+
+export const listeners: ((p: number) => void)[] = []
+
+export const subscribe: Subscribe = (listener) => {
+  listeners.push(listener)
+}
+
+export const initSocket = () => {
+  const endpoint = 'wss://ws.finnhub.io?token=' + apiToken
+  const socket = new WebSocket(endpoint)
+  socket.onopen = () => {
+    socket.send(
+      JSON.stringify({ type: 'subscribe', symbol: 'BINANCE:BTCUSDT' })
+    )
+  }
+  socket.onmessage = (event) => {
+    type Datum = {
+      c: number | null
+      p: number
+      s: string
+      t: number
+      v: number
+    }
+    const data = JSON.parse(event.data) as {
+      type: string
+      data: Datum[]
+    }
+    if (data.type === 'trade') {
+      // console.log(data)
+      const latestPrice = data.data.sort((a, b) => b.t - a.t)[0].p
+      listeners.forEach((listener) => listener(latestPrice))
+    }
+  }
+  return socket
+}
+
+export const socketAtom = atom(initSocket())
+
+export const useSocket = () => {
+  const [socket] = useAtom(socketAtom)
+  return socket
 }

@@ -1,14 +1,11 @@
 import { CandleData, Chart, Source } from './chart'
 import Palette from './chart/palette'
-import { getCandles } from './finnhub'
+import { getCandles, subscribe } from './finnhub'
 import { Icon } from './icon'
 import Input from './input'
-import Button from './input/button'
 import { Select } from './input/select'
 import Menu from './input/menu'
 import Tabs from './tabs'
-import { useState } from 'react'
-import Dialog from './dialog'
 import Picker from './input/picker'
 
 function Stuff() {
@@ -35,6 +32,8 @@ function App() {
     { name: 'Option 3' },
   ]
   const mockTabs = [{ name: 'Tab 1' }, { name: 'Tab 2' }, { name: 'Tab 3' }]
+
+  // const socket = useSocket();
 
   return (
     <main class="container mx-auto p-6 space-y-6 h-full flex flex-col">
@@ -72,7 +71,7 @@ function App() {
 
       <div class="relative flex-1">
         <Chart>
-          <Source getCandles={getCandles} />
+          <Source getCandles={getCandles} subscribe={subscribe} />
           <CandleData />
         </Chart>
       </div>
