@@ -42,7 +42,7 @@ export default ({ candles }: Props) => {
     return (max - x) / (max - min)
   }
   /** percent */
-  const p = (x: number) => `${x * 100}%`
+  const p = (x: number) => (isNaN(x) ? '0%' : `${x * 100}%`)
 
   const yflat = flatten(data.map((d) => [d.open, d.close, d.high, d.low]))
   const ymax = max(yflat) || 0
@@ -122,52 +122,53 @@ export default ({ candles }: Props) => {
 
   const { x, y } = usePointer({ node: svgRef })
 
-  const l = len - 1
-  const xSnapped = useMemo(() => (Math.round(x * l) + 0.5) / l, [x, l])
+  const xSnapped = useMemo(
+    () => (Math.round((x - 0.5 / len) * len) + 0.5) / len,
+    [x, len]
+  )
 
   const PriceAxis = () => {
+    const range = ymax - ymin
+    const ycurr = useMemo(() => ymin + range * (1 - y), [y, ymin, ymax])
+
     return (
-      <g>
-        <text x="0%" y="0%" class="fill-label" dominantBaseline="middle">
-          0
-        </text>
-        <text x="0%" y="100%" class="fill-label" dominantBaseline="middle">
-          100
-        </text>
-      </g>
+      <div class="px-1 relative h-full w-18 overflow-hidden">
+        <p
+          class="h-0 flex items-center text-xs"
+          style={{
+            position: 'absolute',
+            top: p(y),
+          }}
+        >
+          {ycurr.toFixed(2)}
+        </p>
+      </div>
     )
   }
 
   return (
-    <svg className="w-full h-full overflow-visible" ref={svgRef}>
-      <defs>
-        <filter x="0" y="0" width="1" height="1" id="solid">
-          <feFlood flood-color="black" result="bg" />
-          <feMerge>
-            <feMergeNode in="bg" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
-      {bars}
-      {/* {lines} */}
-      <line
-        x1={p(xSnapped)}
-        y1="0%"
-        x2={p(xSnapped)}
-        y2="100%"
-        class="stroke-medium"
-        strokeDasharray={4}
-      />
-      <line
-        x1="0"
-        y1={p(y)}
-        x2="100%"
-        y2={p(y)}
-        class="stroke-medium"
-        strokeDasharray={4}
-      />
+    <div className="w-full h-full relative flex">
+      <svg className="w-full h-full" ref={svgRef}>
+        {bars}
+        {/* {lines} */}
+        <line
+          x1={p(xSnapped)}
+          y1="0%"
+          x2={p(xSnapped)}
+          y2="100%"
+          class="stroke-medium"
+          strokeDasharray={4}
+        />
+        <line
+          x1="0"
+          y1={p(y)}
+          x2="100%"
+          y2={p(y)}
+          class="stroke-medium"
+          strokeDasharray={4}
+        />
+      </svg>
       <PriceAxis />
-    </svg>
+    </div>
   )
 }
