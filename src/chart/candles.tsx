@@ -58,14 +58,15 @@ export default ({ candles }: Props) => {
     return 1 - norm(selectx(d), xmin, xmax + oneMinute)
   }
   function bar(d: CandleDatum) {
-    const x = xnorm(d)
+    const pad = 1 / 5 / len
+    const x = xnorm(d) + pad / 2
     const y = ynorm(d.close)
     const y2 = ynorm(d.open)
     const y3 = Math.min(y, y2)
     const high = ynorm(d.high)
     const low = ynorm(d.low)
     const color = d.close < d.open ? 'red' : 'green'
-    const w = 1 / len
+    const w = 1 / len - pad
     const h = Math.abs(y - y2)
 
     // calculate the exact number of pixels for padding and for bar width
@@ -128,7 +129,8 @@ export default ({ candles }: Props) => {
   const { x, y } = usePointer({ node: svgRef })
 
   const xSnapped = useMemo(
-    () => Math.min(Math.max((Math.round((x - 0.5 / len) * len) + 0.5) / len, 0), 1),
+    () =>
+      Math.min(Math.max((Math.round((x - 0.5 / len) * len) + 0.5) / len, 0), 1),
     [x, len]
   )
 
@@ -139,7 +141,7 @@ export default ({ candles }: Props) => {
     if (svgRef.current) {
       const height = svgRef.current!.getBoundingClientRect().height
 
-      console.log('height', height)
+      // console.log('height', height)
     }
 
     return (

@@ -1,6 +1,6 @@
 import { CandleData, Chart, Source } from './chart'
 import Palette from './chart/palette'
-import { getCandles, subscribe } from './finnhub'
+import { useFinnhub } from './finnhub'
 import { Icon } from './icon'
 import Input from './input'
 import { Select } from './input/select'
@@ -33,7 +33,7 @@ function App() {
   ]
   const mockTabs = [{ name: 'Tab 1' }, { name: 'Tab 2' }, { name: 'Tab 3' }]
 
-  // const socket = useSocket();
+  const { getCandles, subscribe } = useFinnhub()
 
   return (
     <main class="container mx-auto p-6 space-y-6 h-full flex flex-col">

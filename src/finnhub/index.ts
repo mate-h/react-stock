@@ -1,12 +1,18 @@
 import { atom, useAtom } from 'jotai'
-import { CandleResolution, GetCandles, Subscribe } from '../chart/types'
+import { useEffect } from 'react'
+import {
+  CandleDatum,
+  CandleResolution,
+  GetCandles,
+  Subscribe,
+} from '../chart/types'
 // import mockData from './mock.json'
 
 // finnhub module
 const apiRoot = 'https://finnhub.io/api/v1'
 const apiToken = 'c9dhq42ad3id6u3ecv30'
 
-export type FinnhubResponse = {
+export type CandlesResponse = {
   c: number[]
   h: number[]
   l: number[]
@@ -15,6 +21,23 @@ export type FinnhubResponse = {
   t: number[]
   v: number[]
 }
+
+interface SocketMessageBase<Datum, Type = string> {
+  type: Type
+  data: Datum[]
+}
+
+type TradeDatum = {
+  c: number | null
+  p: number
+  s: string
+  t: number
+  v: number
+}
+
+interface SocketTrade extends SocketMessageBase<TradeDatum, 'trade'> {}
+
+type SocketMessage = SocketTrade
 
 export function getResolution(resolution: CandleResolution): string {
   const lookup: Partial<Record<CandleResolution, string>> = {
@@ -30,12 +53,7 @@ export function getResolution(resolution: CandleResolution): string {
   return lookup[resolution] || '1'
 }
 
-export const getCandles: GetCandles = async ({
-  symbol,
-  type,
-  resolution,
-  range,
-}) => {
+const getCandles: GetCandles = async ({ symbol, type, resolution, range }) => {
   function getUrl() {
     let symbolName = symbol
     const msec = (sec: number) => Math.floor(sec / 1000)
@@ -46,7 +64,7 @@ export const getCandles: GetCandles = async ({
   }
   async function getCandles(mock = false) {
     // if (mock) return mockData
-    return (await fetch(getUrl()).then((res) => res.json())) as FinnhubResponse
+    return (await fetch(getUrl()).then((res) => res.json())) as CandlesResponse
   }
   const candles = await getCandles(false)
 
@@ -64,13 +82,7 @@ export const getCandles: GetCandles = async ({
   }))
 }
 
-export const listeners: ((p: number) => void)[] = []
-
-export const subscribe: Subscribe = (listener) => {
-  listeners.push(listener)
-}
-
-export const initSocket = () => {
+const initSocket = (callback: (trades: TradeDatum[]) => void) => {
   const endpoint = 'wss://ws.finnhub.io?token=' + apiToken
   const socket = new WebSocket(endpoint)
   socket.onopen = () => {
@@ -79,29 +91,33 @@ export const initSocket = () => {
     )
   }
   socket.onmessage = (event) => {
-    type Datum = {
-      c: number | null
-      p: number
-      s: string
-      t: number
-      v: number
-    }
-    const data = JSON.parse(event.data) as {
-      type: string
-      data: Datum[]
-    }
+    const data = JSON.parse(event.data) as SocketMessage
     if (data.type === 'trade') {
-      // console.log(data)
-      const latestPrice = data.data.sort((a, b) => b.t - a.t)[0].p
-      listeners.forEach((listener) => listener(latestPrice))
+      callback(data.data)
     }
   }
   return socket
 }
 
-export const socketAtom = atom(initSocket())
+export const socketAtom = atom<WebSocket | null>(null)
+export const listenersAtom = atom<((d: CandleDatum) => void)[]>([])
 
-export const useSocket = () => {
-  const [socket] = useAtom(socketAtom)
-  return socket
+export const useFinnhub = () => {
+  const [socket, setSocket] = useAtom(socketAtom)
+  function onUpdate(trades: TradeDatum[]) {
+    console.log(trades.length)
+  }
+  useEffect(() => {
+    if (!socket) {
+      const s = initSocket(onUpdate)
+      setSocket(s)
+    } else {
+      return () => socket.close()
+    }
+  }, [socket, setSocket])
+  const [, setListeners] = useAtom(listenersAtom)
+  const subscribe: Subscribe = (listener) => {
+    setListeners((listeners) => [...listeners, listener])
+  }
+  return { socket, getCandles, subscribe }
 }

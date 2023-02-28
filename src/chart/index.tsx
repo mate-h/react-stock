@@ -45,8 +45,8 @@ export function CandleData() {
         range: [hourAgo, now],
         resolution: '1m',
       })
-      source!.subscribe((price) => {
-        console.log('price', price)
+      source!.subscribe((datum) => {
+        console.log('new candle', datum)
       })
       console.log(candles.length + ' results')
       setCandles(candles)
