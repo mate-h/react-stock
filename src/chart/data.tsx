@@ -17,6 +17,7 @@ export function CandleData() {
   const [subscribed, setSubscribed] = useState(false)
   const [resolution] = useAtom(resolutionAtom)
   const resolutionRef = useRef(resolution)
+  const loadingRef = useRef(loading)
 
   useEffect(() => {
     if (!source) return
@@ -34,6 +35,7 @@ export function CandleData() {
   async function load({ resolution }: { resolution: CandleResolution }) {
     console.log('loading ' + resolution)
     setLoading(true)
+    loadingRef.current = true
     const now = new Date()
     const unitCount = 60
     const hourAgo = new Date(now.getTime() - unitCount * getUnit(resolution))
@@ -44,6 +46,7 @@ export function CandleData() {
       resolution,
     })
     setLoading(false)
+    loadingRef.current = false
     setNewResolution(resolution)
     setCandles(candles)
     candlesRef.current = candles
@@ -63,6 +66,7 @@ export function CandleData() {
       const resolution = resolutionRef.current
 
       if (currentT - lastT > getUnit(resolution)) {
+        if (loadingRef.current) return
         console.log('new candle ', resolution)
         // new candle
         dc.push({
