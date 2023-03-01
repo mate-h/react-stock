@@ -2,6 +2,8 @@ import { RefObject, useEffect, useMemo, useRef, useState } from 'react'
 import { CandleDatum, CandleDelta } from './types'
 import { min, max, chunk, flatten } from 'lodash'
 import { classes } from '../classes'
+import { useAtom } from 'jotai'
+import { viewModeAtom } from '../app'
 type Props = {
   candles: CandleDatum[]
   delta?: CandleDelta
@@ -106,7 +108,7 @@ export default ({ candles, delta }: Props) => {
     const y2 = ynorm(d2.open)
     return (
       <line
-        class="stroke-white"
+        class="stroke-medium"
         key={d1.date.getTime()}
         x1={p(x1)}
         y1={p(y1)}
@@ -115,15 +117,15 @@ export default ({ candles, delta }: Props) => {
       />
     )
   }
-  const bars = data.map(bar)
-  const lines = chunk(
+
+  const lineGroups = chunk(
     data.reduce((a, c, i) => {
       a.push(c)
       if (i > 0 && i < data.length - 1) a.push(c)
       return a
     }, [] as CandleDatum[]),
     2
-  ).map(line)
+  )
 
   const svgRef = useRef<SVGSVGElement>(null)
 
@@ -210,13 +212,77 @@ export default ({ candles, delta }: Props) => {
       </div>
     )
   }
+  const [size, setSize] = useState({ width: 0, height: 0 })
+  function area([d1, d2]: CandleDatum[]) {
+    // top of the area is the area between high and low
+    // bottom of the area is the area between open and close
+
+    const sx = size.width
+    const sy = size.height
+    const u = 1 / len
+    const x1 = (xnorm(d1) + u / 2) * sx
+    const x2 = (xnorm(d2) + u / 2) * sx
+    const y1h = ynorm(d1.high) * sy
+    const y2h = ynorm(d2.high) * sy
+    const y1l = ynorm(d1.low) * sy
+    const y2l = ynorm(d2.low) * sy
+
+    const d = `
+      M ${x1} ${y1h}
+      L ${x2} ${y2h}
+      L ${x2} ${y2l}
+      L ${x1} ${y1l}
+      
+    `
+
+    return (
+      <g key={d1.date.getTime()}>
+        <path class="fill-well" d={d} />
+      </g>
+    )
+  }
+
+  const areas = chunk(
+    data.reduce((a, c, i) => {
+      a.push(c)
+      if (i > 0 && i < data.length - 1) a.push(c)
+      return a
+    }, [] as CandleDatum[]),
+    4
+  ).map(area)
+
+  const lastCandle = data[data.length - 1]
+
+  useEffect(() => {
+    // set the viewbox to the current w and h
+    if (svgRef.current) {
+      const { width, height } = svgRef.current.getBoundingClientRect()
+      setSize({ width, height })
+      svgRef.current.setAttribute('viewBox', `0 0 ${width} ${height}`)
+    }
+  }, [])
+
+  const [viewMode] = useAtom(viewModeAtom)
 
   return (
-    <div className="w-full h-full relative flex">
-      <div className="relative flex-1 flex flex-col">
-        <svg className="w-full h-full" ref={svgRef}>
-          {bars}
-          {/* {lines} */}
+    <div class="w-full h-full relative flex">
+      <div class="relative flex-1 flex flex-col">
+        <svg class="w-full h-full" ref={svgRef}>
+          {/* {lineGroups.map(line)} */}
+
+          {viewMode === 'candles' && <>{data.map(bar)}</>}
+
+          {viewMode === 'lines' && (
+            <>
+              {lineGroups.map(area)}
+
+              {lineGroups.map(line)}
+            </>
+          )}
+
+          {/* {data.map(bar)} */}
+
+          {/* {line([lastCandle, lastCandle])} */}
           <line
             x1={p(xSnapped)}
             y1="0%"
