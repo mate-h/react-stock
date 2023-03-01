@@ -5,6 +5,7 @@ import { IconName } from '../icon'
 type TabType = { name: string } // | {name: string; icon: IconName}
 
 type Props = {
+  id?: string
   tabs: TabType[]
   onChange?: (index: number) => void
 }
@@ -14,6 +15,7 @@ export default (props: Props) => {
     <Tab.Group onChange={props.onChange}>
       <Tab.List
         as="span"
+        id={props.id}
         className="whitespace-nowrap inline-block space-x-1 rounded-xl p-1"
       >
         {props.tabs.map((tab, i) => (

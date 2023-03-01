@@ -38,7 +38,7 @@ export default ({ candles, delta }: Props) => {
 
   const [unit, setUnit] = useState(10)
 
-  const len = 60
+  const [len, setLen] = useState(60)
   const data = candles.filter((e, i) => i >= candles.length - len)
 
   const norm = (x: number, min: number, max: number) => {
@@ -72,10 +72,6 @@ export default ({ candles, delta }: Props) => {
     const w = 1 / len - pad
     const h = Math.abs(y - y2)
 
-    // calculate the exact number of pixels for padding and for bar width
-
-    // bar width should be odd number of pixels
-
     return (
       <g key={d.date.getTime()}>
         <rect
@@ -102,6 +98,7 @@ export default ({ candles, delta }: Props) => {
     )
   }
   function line([d1, d2]: CandleDatum[]) {
+    const u = 1 / len
     const x1 = xnorm(d1)
     const y1 = ynorm(d1.open)
     const x2 = xnorm(d2)
@@ -242,23 +239,31 @@ export default ({ candles, delta }: Props) => {
     )
   }
 
-  const areas = chunk(
-    data.reduce((a, c, i) => {
-      a.push(c)
-      if (i > 0 && i < data.length - 1) a.push(c)
-      return a
-    }, [] as CandleDatum[]),
-    4
-  ).map(area)
-
-  const lastCandle = data[data.length - 1]
-
   useEffect(() => {
     // set the viewbox to the current w and h
     if (svgRef.current) {
-      const { width, height } = svgRef.current.getBoundingClientRect()
-      setSize({ width, height })
-      svgRef.current.setAttribute('viewBox', `0 0 ${width} ${height}`)
+      const listener = () => {
+        const c = svgRef.current!
+        const { width, height } = c.getBoundingClientRect()
+        setSize({ width, height })
+        c.setAttribute('viewBox', `0 0 ${width} ${height}`)
+
+        if (width < 600) {
+          setLen(20)
+        } else if (width < 800) {
+          setLen(40)
+        } else {
+          setLen(60)
+        }
+      }
+      listener()
+
+      const observer = new ResizeObserver(listener)
+      observer.observe(svgRef.current)
+
+      return () => {
+        observer.disconnect()
+      }
     }
   }, [])
 
@@ -268,21 +273,15 @@ export default ({ candles, delta }: Props) => {
     <div class="w-full h-full relative flex">
       <div class="relative flex-1 flex flex-col">
         <svg class="w-full h-full" ref={svgRef}>
-          {/* {lineGroups.map(line)} */}
+          {['candles', 'both'].includes(viewMode) && <>{data.map(bar)}</>}
 
-          {viewMode === 'candles' && <>{data.map(bar)}</>}
-
-          {viewMode === 'lines' && (
+          {['lines', 'both'].includes(viewMode) && (
             <>
               {lineGroups.map(area)}
-
               {lineGroups.map(line)}
             </>
           )}
 
-          {/* {data.map(bar)} */}
-
-          {/* {line([lastCandle, lastCandle])} */}
           <line
             x1={p(xSnapped)}
             y1="0%"

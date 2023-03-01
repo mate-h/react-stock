@@ -8,6 +8,7 @@ import Menu from './input/menu'
 import Tabs from './tabs'
 import Picker from './input/picker'
 import { atom, useAtom } from 'jotai'
+import { useState } from 'react'
 
 function Stuff() {
   return (
@@ -69,28 +70,55 @@ const Demo = () => {
 }
 
 export const viewModeAtom = atom('candles')
-const VideModes = () => {
+export const symbolSearchAtom = atom('BTCUSDT')
+const ViewModes = () => {
   const [viewMode, setViewMode] = useAtom(viewModeAtom)
   return (
     <Tabs
-      tabs={[{ name: 'Candles' }, { name: 'Lines' }]}
-      onChange={(index) => setViewMode(index === 0 ? 'candles' : 'lines')}
+      id="view-mode"
+      tabs={[{ name: 'Candles' }, { name: 'Lines' }, { name: 'Both' }]}
+      onChange={(index) => setViewMode(['candles', 'lines', 'both'][index])}
+    />
+  )
+}
+
+const SearchInput = () => {
+  const [search, setSearch] = useAtom(symbolSearchAtom)
+  return (
+    <Input
+      id="symbol"
+      placeholder="Search"
+      onChange={(e) => setSearch(e.target.value)}
+      value={search}
     />
   )
 }
 
 function App() {
   const { subscribe } = useFinnhub()
+
+  const Field = ({ children, label, for: htmlFor }: any) => (
+    <fieldset>
+      <div class="flex items-center space-x-2 max-w-xs">
+        <label for={htmlFor} class="text-sm font-medium text-medium flex-1">
+          {label}
+        </label>
+        {children}
+      </div>
+    </fieldset>
+  )
+  const [collapsed, setCollapsed] = useState(true)
+  function onToggle(e: React.MouseEvent) {
+    e.preventDefault()
+    setCollapsed(!collapsed)
+  }
   return (
     <main class="flex flex-col h-full">
       <header>
-        <nav class="flex bg-well border-b border-divider relative z-10 space-x-2 px-2">
-          <h1 class="font-mono text-sm flex items-center">
+        <nav class="flex bg-well border-b border-divider relative z-10 space-x-2 p-2">
+          <h1 class="font-mono text-sm flex items-center flex-1">
             <a href="./">📈 react-stock</a>
           </h1>
-          <div class="flex-1">
-            <VideModes />
-          </div>
           <a
             href="https://github.com/mate-h/react-stock"
             target="_blank"
@@ -104,8 +132,35 @@ function App() {
             />
           </a>
         </nav>
+        <div class="container mx-auto px-6">
+          <button
+            onClick={onToggle}
+            class="flex space-x-1 text-sm text-medium hover:text-label"
+          >
+            <span>Options</span>
+            <Icon name="chevron.down" />
+          </button>
+        </div>
+        {!collapsed && (
+          <form class="px-6 py-1 container mx-auto divide-y divide-divider space-y-1">
+            <Field label="Symbol" for="symbol">
+              <SearchInput />
+            </Field>
+            <Field label="Resolution" for="resolution">
+              <Tabs
+                id="resolution"
+                tabs={['1m', '5m', '15m', '1h', '1d'].map((name) => ({
+                  name,
+                }))}
+              />
+            </Field>
+            <Field label="View" for="view-mode">
+              <ViewModes />
+            </Field>
+          </form>
+        )}
       </header>
-      <section class="container mx-auto p-6 space-y-6 flex-1">
+      <section class="container mx-auto px-6 pb-6 space-y-6 flex-1">
         <div class="relative h-full">
           <Chart>
             <Source getCandles={getCandles} subscribe={subscribe} />
