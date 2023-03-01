@@ -86,7 +86,7 @@ function App() {
       <header>
         <nav class="flex bg-well border-b border-divider relative z-10 space-x-2 px-2">
           <h1 class="font-mono text-sm flex items-center">
-            <a href="/">📈 react-stock</a>
+            <a href="./">📈 react-stock</a>
           </h1>
           <div class="flex-1">
             <VideModes />
