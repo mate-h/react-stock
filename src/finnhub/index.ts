@@ -2,8 +2,10 @@ import { atom, useAtom } from 'jotai'
 import { useEffect } from 'react'
 import {
   CandleDatum,
+  CandleDelta,
   CandleResolution,
   GetCandles,
+  Listener,
   Subscribe,
 } from '../chart/types'
 // import mockData from './mock.json'
@@ -28,10 +30,15 @@ interface SocketMessageBase<Datum, Type = string> {
 }
 
 type TradeDatum = {
+  /** Lise of trade conditions */
   c: number | null
+  /** Price */
   p: number
+  /** Symbol */
   s: string
+  /** Unix ms timestamp */
   t: number
+  /** Volume */
   v: number
 }
 
@@ -53,7 +60,7 @@ export function getResolution(resolution: CandleResolution): string {
   return lookup[resolution] || '1'
 }
 
-const getCandles: GetCandles = async ({ symbol, type, resolution, range }) => {
+export const getCandles: GetCandles = async ({ symbol, type, resolution, range }) => {
   function getUrl() {
     let symbolName = symbol
     const msec = (sec: number) => Math.floor(sec / 1000)
@@ -82,42 +89,66 @@ const getCandles: GetCandles = async ({ symbol, type, resolution, range }) => {
   }))
 }
 
-const initSocket = (callback: (trades: TradeDatum[]) => void) => {
-  const endpoint = 'wss://ws.finnhub.io?token=' + apiToken
-  const socket = new WebSocket(endpoint)
-  socket.onopen = () => {
-    socket.send(
-      JSON.stringify({ type: 'subscribe', symbol: 'BINANCE:BTCUSDT' })
-    )
-  }
-  socket.onmessage = (event) => {
-    const data = JSON.parse(event.data) as SocketMessage
-    if (data.type === 'trade') {
-      callback(data.data)
+const initSocket = async (callback: (trades: TradeDatum[]) => void) => {
+  return new Promise<WebSocket>((resolve, reject) => {
+    const endpoint = 'wss://ws.finnhub.io?token=' + apiToken
+    const socket = new WebSocket(endpoint)
+    socket.onopen = () => {
+      socket.send(
+        JSON.stringify({ type: 'subscribe', symbol: 'BINANCE:BTCUSDT' })
+      )
     }
-  }
-  return socket
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data) as SocketMessage
+      if (data.type === 'trade') {
+        resolve(socket)
+        callback(data.data)
+      }
+    }
+  })
 }
 
 export const socketAtom = atom<WebSocket | null>(null)
-export const listenersAtom = atom<((d: CandleDatum) => void)[]>([])
 
-export const useFinnhub = () => {
+export const listenersAtom = atom<Listener[]>([])
+
+export const useSocket = (onUpdate: (trades: TradeDatum[]) => void) => {
   const [socket, setSocket] = useAtom(socketAtom)
-  function onUpdate(trades: TradeDatum[]) {
-    console.log(trades.length)
-  }
-  useEffect(() => {
-    if (!socket) {
-      const s = initSocket(onUpdate)
-      setSocket(s)
-    } else {
-      return () => socket.close()
-    }
-  }, [socket, setSocket])
-  const [, setListeners] = useAtom(listenersAtom)
+  const [listeners, setListeners] = useAtom(listenersAtom)
   const subscribe: Subscribe = (listener) => {
     setListeners((listeners) => [...listeners, listener])
   }
-  return { socket, getCandles, subscribe }
+  useEffect(() => {
+    if (listeners.length === 0) return
+    let s: WebSocket | null = null
+    async function init() {
+      s = await initSocket(onUpdate)
+      if (s) {
+        setSocket(s)
+      }
+    }
+    init()
+    return () => {
+      if (s) {
+        s.close()
+      }
+    }
+  }, [listeners])
+  return { socket, listeners, subscribe }
+}
+
+export const useFinnhub = () => {
+  const { socket, listeners, subscribe } = useSocket(onUpdate)
+  function onUpdate(trades: TradeDatum[]) {
+    // update min, max, last
+
+    const totalV = trades.reduce((sum, trade) => sum + trade.v, 0)
+    const close =
+      trades.reduce((sum, trade) => sum + trade.p * trade.v, 0) / totalV
+    const date = new Date(trades[trades.length - 1].t)
+
+    listeners.forEach((listener) => listener({ date, close }))
+  }
+
+  return { socket, subscribe }
 }

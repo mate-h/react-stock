@@ -1,9 +1,10 @@
 import { RefObject, useEffect, useMemo, useRef, useState } from 'react'
-import { CandleDatum } from './types'
+import { CandleDatum, CandleDelta } from './types'
 import { min, max, chunk, flatten } from 'lodash'
 import { classes } from '../classes'
 type Props = {
   candles: CandleDatum[]
+  delta?: CandleDelta
 }
 
 const usePointer = ({
@@ -29,14 +30,14 @@ const usePointer = ({
   return state
 }
 
-export default ({ candles }: Props) => {
+export default ({ candles, delta }: Props) => {
   // console.log(candles.length + ' results')
   // console.log(candles)
 
   const [unit, setUnit] = useState(10)
 
-  const len = candles.length
-  const data = candles.filter((e, i) => i < len)
+  const len = 60
+  const data = candles.filter((e, i) => i >= candles.length - len)
 
   const norm = (x: number, min: number, max: number) => {
     return (max - x) / (max - min)
@@ -126,7 +127,11 @@ export default ({ candles }: Props) => {
 
   const svgRef = useRef<SVGSVGElement>(null)
 
-  const { x, y } = usePointer({ node: svgRef })
+  let { x, y } = usePointer({ node: svgRef })
+
+  if (delta) {
+    y = ynorm(delta.close)
+  }
 
   const xSnapped = useMemo(
     () =>
@@ -167,7 +172,9 @@ export default ({ candles }: Props) => {
     const xcurr = useMemo(() => xmin + range * xSnapped, [xSnapped, xmin, xmax])
 
     function format() {
-      const date = new Date(xcurr)
+      if (candles.length === 0) return ''
+      const index = Math.round(xSnapped * (candles.length - 1))
+      const date = candles[index].date
       const fmt = new Intl.DateTimeFormat('en', {
         hour: 'numeric',
         minute: 'numeric',

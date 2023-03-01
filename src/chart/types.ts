@@ -41,7 +41,14 @@ export interface ChartType {
   id: string
 }
 
-export type Subscribe = (listener: (d: CandleDatum) => void) => void
+export type CandleDelta = {
+  date: Date
+  close: number
+}
+
+export type Listener = (d: CandleDelta) => void
+
+export type Subscribe = (listener: Listener) => void
 
 export type GetCandles = (props: {
   symbol: string
