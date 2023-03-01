@@ -227,9 +227,9 @@ export default ({ candles, delta }: Props) => {
           />
           <line
             x1="0"
-            y1={p(y)}
+            y1={p(y2)}
             x2="100%"
-            y2={p(y)}
+            y2={p(y2)}
             class="stroke-medium"
             strokeDasharray={4}
           />
