@@ -3,7 +3,8 @@ import { CandleDatum, CandleDelta } from './types'
 import { min, max, chunk, flatten } from 'lodash'
 import { classes } from '../classes'
 import { useAtom } from 'jotai'
-import { viewModeAtom } from '../header'
+import { viewModeAtom } from './store'
+
 type Props = {
   candles: CandleDatum[]
   delta?: CandleDelta

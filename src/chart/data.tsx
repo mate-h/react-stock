@@ -3,40 +3,24 @@ import { CandleDatum, CandleDelta } from './types'
 import React from 'react'
 import { getTradingHours } from './lib'
 import Candles from './candles'
-import { useChart, useSources } from './store'
-import { atom, useAtom } from 'jotai'
-
-function error(s: string) {
-  console.error(`[react-stock] ${s}`)
-}
-function warn(s: string) {
-  console.warn(`[react-stock] ${s}`)
-}
-
-const candlesAtom = atom<CandleDatum[]>([])
+import { useSource, resolutionAtom, candlesAtom } from './store'
+import { useAtom } from 'jotai'
 
 export function CandleData() {
-  const [sources] = useSources()
-  const [chart] = useChart()
+  const source = useSource()
   const [candles, setCandles] = useAtom(candlesAtom)
   const candlesRef = React.useRef(candles)
   const [delta, setDelta] = useState<CandleDelta>()
 
   const [loaded, setLoaded] = useState(false)
   const [subscribed, setSubscribed] = useState(false)
+  const [resolution] = useAtom(resolutionAtom)
+
   /** Chart source */
   useEffect(() => {
-    const source = Object.values(sources).find((s) => s.chartId === chart.id)
-    const l = Object.keys(sources).length
-    if (!source) {
-      error('current source has not been set using the <Source> component')
-      return
-    }
-    if (l > 1) {
-      warn('more than one source has been set, using the first one')
-    }
-
     const { preMarket, marketOpen, afterHours } = getTradingHours()
+
+    if (!source) return
 
     async function subscribe() {
       source!.subscribe((d) => {
@@ -75,7 +59,7 @@ export function CandleData() {
         symbol: 'BINANCE:BTCUSDT',
         type: 'crypto',
         range: [hourAgo, now],
-        resolution: '1m',
+        resolution,
       })
       candlesRef.current = candles
       setCandles(candles)
@@ -88,6 +72,6 @@ export function CandleData() {
       subscribe()
       setSubscribed(true)
     }
-  }, [sources, candles, loaded, subscribed])
+  }, [source, candles, loaded, subscribed, resolution])
   return <Candles candles={candles} delta={delta} />
 }

@@ -1,12 +1,12 @@
-import { atom, useAtom } from 'jotai'
+import { useAtom } from 'jotai'
 import Tabs from './tabs'
 import Input from './input'
 import { Icon } from './icon'
 import { Field } from './field'
 import { useState } from 'react'
+import { symbolSearchAtom, viewModeAtom, resolutionAtom } from './chart/store'
+import { CandleResolution } from './chart/types'
 
-export const viewModeAtom = atom('candles')
-export const symbolSearchAtom = atom('BTCUSDT')
 const ViewModes = () => {
   const [, setViewMode] = useAtom(viewModeAtom)
   return (
@@ -26,6 +26,23 @@ const SearchInput = () => {
       placeholder="Search"
       onChange={(e) => setSearch(e.target.value)}
       value={search}
+    />
+  )
+}
+
+const ResolutionTabs = () => {
+  const [, setResolution] = useAtom(resolutionAtom)
+  return (
+    <Tabs
+      id="resolution"
+      onChange={(index) =>
+        setResolution(
+          ['1m', '5m', '15m', '1h', '1d'][index] as CandleResolution
+        )
+      }
+      tabs={['1m', '5m', '15m', '1h', '1d'].map((name) => ({
+        name,
+      }))}
     />
   )
 }
@@ -70,12 +87,7 @@ export default () => {
             <SearchInput />
           </Field>
           <Field label="Resolution" for="resolution">
-            <Tabs
-              id="resolution"
-              tabs={['1m', '5m', '15m', '1h', '1d'].map((name) => ({
-                name,
-              }))}
-            />
+            <ResolutionTabs />
           </Field>
           <Field label="View" for="view-mode">
             <ViewModes />
