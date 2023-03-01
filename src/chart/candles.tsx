@@ -129,8 +129,9 @@ export default ({ candles, delta }: Props) => {
 
   let { x, y } = usePointer({ node: svgRef })
 
+  let y2 = 0
   if (delta) {
-    y = ynorm(delta.close)
+    y2 = ynorm(delta.close)
   }
 
   const xSnapped = useMemo(
@@ -142,6 +143,7 @@ export default ({ candles, delta }: Props) => {
   const PriceAxis = () => {
     const range = ymax - ymin
     const ycurr = useMemo(() => ymin + range * (1 - y), [y, ymin, ymax])
+    const y2curr = useMemo(() => ymin + range * (1 - y2), [y2, ymin, ymax])
 
     if (svgRef.current) {
       const height = svgRef.current!.getBoundingClientRect().height
@@ -149,18 +151,23 @@ export default ({ candles, delta }: Props) => {
       // console.log('height', height)
     }
 
+    const Text = ({ children, y }: { children: any; y: number }) => (
+      <p
+        class="h-0 flex items-center text-xs"
+        style={{
+          position: 'absolute',
+          top: p(y),
+        }}
+      >
+        {children}
+      </p>
+    )
+
     return (
       <div class="flex flex-col">
         <div class="px-1 relative w-18 overflow-hidden border-l border-divider bg-well flex-1">
-          <p
-            class="h-0 flex items-center text-xs"
-            style={{
-              position: 'absolute',
-              top: p(y),
-            }}
-          >
-            {ycurr.toFixed(2)}
-          </p>
+          <Text y={y}>{ycurr.toFixed(2)}</Text>
+          <Text y={y2}>{y2curr.toFixed(2)}</Text>
         </div>
         <div class="h-6 bg-well" />
       </div>
@@ -185,17 +192,21 @@ export default ({ candles, delta }: Props) => {
       } catch (e) {}
       return str
     }
+    const Text = ({ children, x }: { children: any; x: number }) => (
+      <p
+        class="flex items-center justify-center w-0 h-full text-xs h-full whitespace-nowrap"
+        style={{
+          position: 'absolute',
+          left: p(x),
+        }}
+      >
+        {children}
+      </p>
+    )
+
     return (
       <div class="px-1 relative w-full h-6 border-t border-divider bg-well">
-        <p
-          class="flex items-center justify-center w-0 h-full text-xs h-full whitespace-nowrap"
-          style={{
-            position: 'absolute',
-            left: p(xSnapped),
-          }}
-        >
-          {format()}
-        </p>
+        <Text x={xSnapped}>{format()}</Text>
       </div>
     )
   }
