@@ -1,3 +1,5 @@
+import { CandleResolution } from './types'
+
 export function getTimezoneDiff() {
   // UTC offset in ms
   const timeZoneOffset = (new Date().getTimezoneOffset() * -1) / 60
@@ -42,4 +44,27 @@ export function getTradingHours() {
   // 16:00 - 20:00
   let afterHours = getEDTHours(16, 0, 20, 0)
   return { preMarket, marketOpen, afterHours }
+}
+
+export function getUnit(resolution: CandleResolution) {
+  switch (resolution) {
+    case '1m':
+      return 60 * 1000
+    case '5m':
+      return 5 * 60 * 1000
+    case '15m':
+      return 15 * 60 * 1000
+    case '30m':
+      return 30 * 60 * 1000
+    case '1h':
+      return 60 * 60 * 1000
+    case '1d':
+      return 24 * 60 * 60 * 1000
+    case '1w':
+      return 7 * 24 * 60 * 60 * 1000
+    case '1M':
+      return 30 * 24 * 60 * 60 * 1000
+    default:
+      return 60 * 1000
+  }
 }

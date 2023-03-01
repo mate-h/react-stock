@@ -1,46 +1,28 @@
 import { RefObject, useEffect, useMemo, useRef, useState } from 'react'
-import { CandleDatum, CandleDelta } from './types'
+import { CandleDatum, CandleDelta, CandleResolution } from './types'
 import { min, max, chunk, flatten } from 'lodash'
 import { classes } from '../classes'
 import { useAtom } from 'jotai'
 import { viewModeAtom } from './store'
+import { usePointer } from '../pointer'
+import { getUnit } from './lib'
 
 type Props = {
   candles: CandleDatum[]
   delta?: CandleDelta
+  resolution: CandleResolution
 }
 
-const usePointer = ({
-  node,
-}: {
-  node: RefObject<HTMLElement | SVGElement>
-}) => {
-  // implement pointer events here
-  const [state, setState] = useState({ x: 0.5, y: 0.5 })
-  useEffect(() => {
-    const listener = (e: MouseEvent) => {
-      // calculate the relative position to the node
-      if (!node.current) return
-
-      const rect = node.current.getBoundingClientRect()
-      const x = (e.clientX - rect.left) / rect.width
-      const y = (e.clientY - rect.top) / rect.height
-      setState({ x, y })
-    }
-    window.addEventListener('pointermove', listener)
-    return () => window.removeEventListener('pointermove', listener)
-  }, [])
-  return state
-}
-
-export default ({ candles, delta }: Props) => {
-  // console.log(candles.length + ' results')
+export default ({ candles, delta, resolution }: Props) => {
+  // console.log(data.length + ' results')
   // console.log(candles)
 
   const [unit, setUnit] = useState(10)
 
   const [len, setLen] = useState(60)
-  const data = candles.filter((e, i) => i >= candles.length - len)
+  const data = candles
+    .sort((a, b) => a.date.getTime() - b.date.getTime())
+    .filter((e, i) => i >= candles.length - len)
 
   const norm = (x: number, min: number, max: number) => {
     return (max - x) / (max - min)
@@ -58,10 +40,10 @@ export default ({ candles, delta }: Props) => {
   const xmin = min(data.map((d) => d.date.getTime())) || 0
   const xmax = max(data.map((d) => d.date.getTime())) || 0
   const xnorm = (d: CandleDatum) => {
-    const oneMinute = 1000 * 60
+    const oneMinute = getUnit(resolution)
     return 1 - norm(selectx(d), xmin, xmax + oneMinute)
   }
-  function bar(d: CandleDatum) {
+  function bar(d: CandleDatum, i: number) {
     const pad = 1 / 5 / len
     const x = xnorm(d) + pad / 2
     const y = ynorm(d.close)
@@ -73,12 +55,15 @@ export default ({ candles, delta }: Props) => {
     const w = 1 / len - pad
     const h = Math.abs(y - y2)
 
+    const index = Math.round(xSnapped * (data.length - 1))
+    const matches = index === i
     return (
       <g key={d.date.getTime()}>
         <rect
           class={classes(
             color === 'green' && 'fill-green-500',
-            color === 'red' && 'fill-red-500'
+            color === 'red' && 'fill-red-500',
+            matches && 'stroke-label'
           )}
           x={p(x)}
           y={p(y3)}
@@ -136,7 +121,10 @@ export default ({ candles, delta }: Props) => {
 
   const xSnapped = useMemo(
     () =>
-      Math.min(Math.max((Math.round((x - 0.5 / len) * len) + 0.5) / len, 0), 1),
+      Math.min(
+        Math.max((Math.round((x - 0.5 / len) * len) + 0.5) / len, 0.5 / len),
+        1 - 0.5 / len
+      ),
     [x, len]
   )
 
@@ -179,12 +167,15 @@ export default ({ candles, delta }: Props) => {
     const xcurr = useMemo(() => xmin + range * xSnapped, [xSnapped, xmin, xmax])
 
     function format() {
-      if (candles.length === 0) return ''
-      const index = Math.round(xSnapped * (candles.length - 1))
-      const date = candles[index].date
+      if (data.length === 0) return ''
+      const index = Math.round(xSnapped * (data.length - 1))
+      const date = data[index].date
       const fmt = new Intl.DateTimeFormat('en', {
-        hour: 'numeric',
-        minute: 'numeric',
+        hour: ['1d'].includes(resolution) ? undefined : 'numeric',
+        minute: ['1d'].includes(resolution) ? undefined : 'numeric',
+        day: ['1m', '5m', '15m'].includes(resolution) ? undefined : 'numeric',
+        month: ['1m', '5m', '15m'].includes(resolution) ? undefined : 'short',
+        year: ['1d'].includes(resolution) ? 'numeric' : undefined,
       })
       let str = ''
       try {
