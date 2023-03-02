@@ -6,6 +6,7 @@ import { useAtom } from 'jotai'
 import { viewModeAtom } from './store'
 import { usePointer } from '../pointer'
 import { getUnit } from './lib'
+import { useScroll } from '../scroll'
 
 type Props = {
   candles: CandleDatum[]
@@ -114,6 +115,11 @@ export default ({ candles, delta, resolution }: Props) => {
 
   let { x, y } = usePointer({ node: svgRef })
 
+  const transform = useScroll({ node: svgRef })
+
+  const stringTransform = useMemo(() => {
+    return `translate(${transform.x} ${transform.y}) scale(${transform.scale})`
+  }, [transform])
   let y2 = 0
   if (delta) {
     y2 = ynorm(delta.close)
@@ -265,31 +271,33 @@ export default ({ candles, delta, resolution }: Props) => {
     <div class="w-full h-full relative flex">
       <div class="relative flex-1 flex flex-col">
         <svg class="w-full h-full" ref={svgRef}>
-          {['candles', 'both'].includes(viewMode) && <>{data.map(bar)}</>}
+          <g transform={stringTransform}>
+            {['candles', 'both'].includes(viewMode) && <>{data.map(bar)}</>}
 
-          {['lines', 'both'].includes(viewMode) && (
-            <>
-              {lineGroups.map(area)}
-              {lineGroups.map(line)}
-            </>
-          )}
+            {['lines', 'both'].includes(viewMode) && (
+              <>
+                {lineGroups.map(area)}
+                {lineGroups.map(line)}
+              </>
+            )}
 
-          <line
-            x1={p(xSnapped)}
-            y1="0%"
-            x2={p(xSnapped)}
-            y2="100%"
-            class="stroke-medium"
-            strokeDasharray={4}
-          />
-          <line
-            x1="0"
-            y1={p(y2)}
-            x2="100%"
-            y2={p(y2)}
-            class="stroke-medium"
-            strokeDasharray={4}
-          />
+            <line
+              x1={p(xSnapped)}
+              y1="0%"
+              x2={p(xSnapped)}
+              y2="100%"
+              class="stroke-medium"
+              strokeDasharray={4}
+            />
+            <line
+              x1="0"
+              y1={p(y2)}
+              x2="100%"
+              y2={p(y2)}
+              class="stroke-medium"
+              strokeDasharray={4}
+            />
+          </g>
         </svg>
         <TimeAxis />
       </div>

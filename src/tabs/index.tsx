@@ -6,13 +6,14 @@ type TabType = { name: string } // | {name: string; icon: IconName}
 
 type Props = {
   id?: string
+  selectedIndex?: number
   tabs: TabType[]
   onChange?: (index: number) => void
 }
 
 export default (props: Props) => {
   return (
-    <Tab.Group onChange={props.onChange}>
+    <Tab.Group onChange={props.onChange} selectedIndex={props.selectedIndex}>
       <Tab.List
         as="span"
         id={props.id}

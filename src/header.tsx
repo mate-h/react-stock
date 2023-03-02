@@ -31,16 +31,14 @@ const SearchInput = () => {
 }
 
 const ResolutionTabs = () => {
-  const [, setResolution] = useAtom(resolutionAtom)
+  const [resolution, setResolution] = useAtom(resolutionAtom)
+  const list: CandleResolution[] = ['1m', '5m', '15m', '1h', '1d']
   return (
     <Tabs
       id="resolution"
-      onChange={(index) =>
-        setResolution(
-          ['1m', '5m', '15m', '1h', '1d'][index] as CandleResolution
-        )
-      }
-      tabs={['1m', '5m', '15m', '1h', '1d'].map((name) => ({
+      selectedIndex={list.indexOf(resolution)}
+      onChange={(index) => setResolution(list[index] as CandleResolution)}
+      tabs={list.map((name) => ({
         name,
       }))}
     />
