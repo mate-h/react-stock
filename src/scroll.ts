@@ -10,10 +10,12 @@ export function useScroll({
     y: 0,
     scale: 1,
   })
+  const transformRef = useRef(transform)
   const [dragging, setDragging] = useState(false)
   const [mouseDown, setMouseDown] = useState(false)
   const draggingRef = useRef(dragging)
   const mouseDownRef = useRef(mouseDown)
+  const originRef = useRef({ x: 0, y: 0 })
   useEffect(() => {
     const el = node.current
     if (!el) return
@@ -23,11 +25,31 @@ export function useScroll({
       const dx = e.deltaX
       const dy = e.deltaY
 
+      const isPinch = e.ctrlKey || e.metaKey
+      if (isPinch) {
+        setTransform((prev) => {
+          const rate = 0.005
+          const scale = Math.max(0.1, prev.scale + dy * -rate * prev.scale)
+          const o = originRef.current
+          const tx = o.x * (1 - scale)
+          const ty = o.y * (1 - scale)
+          const newTranform = {
+            x: tx,
+            y: ty,
+            scale,
+          }
+          transformRef.current = newTranform
+          return newTranform
+        })
+        return
+      }
+
       setTransform((prev) => {
-        const scale = prev.scale + e.deltaY * -0.01
         const tx = prev.x - dx
         const ty = prev.y - dy
-        return { x: tx, y: ty, scale: 1 }
+        const newTranform = { x: tx, y: ty, scale: prev.scale }
+        transformRef.current = newTranform
+        return newTranform
       })
     }
     function setCursor(c: string) {
@@ -46,8 +68,18 @@ export function useScroll({
     }
     const pointerMove = (ev: Event) => {
       const e = ev as PointerEvent
+      const rect = el.getBoundingClientRect()
+      const dx = e.movementX
+      const dy = e.movementY
+      originRef.current = {
+        x: (e.clientX - rect.left) / transformRef.current.scale,
+        y: (e.clientY - rect.top) / transformRef.current.scale,
+      }
+      // console.log('origin ', originRef.current)
+
       if (draggingRef.current && mouseDownRef.current) {
         ev.preventDefault()
+
         setTransform((prev) => {
           const tx = prev.x + e.movementX
           const ty = prev.y + e.movementY
