@@ -28,14 +28,15 @@ export function useScroll({
       const isPinch = e.ctrlKey || e.metaKey
       if (isPinch) {
         setTransform((prev) => {
-          const rate = 0.005
-          const scale = Math.max(0.1, prev.scale + dy * -rate * prev.scale)
-          const o = originRef.current
-          const tx = o.x * (1 - scale)
-          const ty = o.y * (1 - scale)
+          const rate = -0.005
+          let scale = prev.scale + dy * rate * prev.scale
+          const maxScale = 10
+          const minScale = 0.1
+          scale = Math.max(minScale, Math.min(maxScale, scale))
+          const origin = originRef.current
           const newTranform = {
-            x: tx,
-            y: ty,
+            x: prev.x - (origin.x - prev.x) * (scale / prev.scale - 1),
+            y: prev.y - (origin.y - prev.y) * (scale / prev.scale - 1),
             scale,
           }
           transformRef.current = newTranform
@@ -69,11 +70,13 @@ export function useScroll({
     const pointerMove = (ev: Event) => {
       const e = ev as PointerEvent
       const rect = el.getBoundingClientRect()
+      const px = e.clientX - rect.left
+      const py = e.clientY - rect.top
       const dx = e.movementX
       const dy = e.movementY
       originRef.current = {
-        x: (e.clientX - rect.left) / transformRef.current.scale,
-        y: (e.clientY - rect.top) / transformRef.current.scale,
+        x: px,
+        y: py,
       }
       // console.log('origin ', originRef.current)
 
@@ -81,9 +84,11 @@ export function useScroll({
         ev.preventDefault()
 
         setTransform((prev) => {
-          const tx = prev.x + e.movementX
-          const ty = prev.y + e.movementY
-          return { x: tx, y: ty, scale: prev.scale }
+          const nx = prev.x + dx
+          const ny = prev.y + dy
+          const newTranform = { x: nx, y: ny, scale: prev.scale }
+          transformRef.current = newTranform
+          return newTranform
         })
       }
     }

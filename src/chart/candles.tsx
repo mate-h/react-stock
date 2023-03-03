@@ -70,6 +70,7 @@ export default ({ candles, delta, resolution }: Props) => {
           y={p(y3)}
           width={p(w)}
           height={p(h)}
+          strokeWidth={1 / transform.scale}
         />
         <line
           class={classes(
@@ -80,6 +81,7 @@ export default ({ candles, delta, resolution }: Props) => {
           y1={p(high)}
           x2={p(x + w / 2)}
           y2={p(low)}
+          strokeWidth={1 / transform.scale}
         />
       </g>
     )
@@ -98,6 +100,7 @@ export default ({ candles, delta, resolution }: Props) => {
         y1={p(y1)}
         x2={p(x2)}
         y2={p(y2)}
+        strokeWidth={1 / transform.scale}
       />
     )
   }
@@ -112,10 +115,12 @@ export default ({ candles, delta, resolution }: Props) => {
   )
 
   const svgRef = useRef<SVGSVGElement>(null)
-
-  let { x, y } = usePointer({ node: svgRef })
-
   const transform = useScroll({ node: svgRef })
+  const transformRef = useRef(transform)
+  useEffect(() => {
+    transformRef.current = transform
+  }, [transform])
+  let { x, y } = usePointer({ node: svgRef, transformRef })
 
   const stringTransform = useMemo(() => {
     return `translate(${transform.x} ${transform.y}) scale(${transform.scale})`
@@ -151,6 +156,7 @@ export default ({ candles, delta, resolution }: Props) => {
         style={{
           position: 'absolute',
           top: p(y),
+          transform: `scaleY(${1 / transform.scale})`,
         }}
       >
         {children}
@@ -159,7 +165,15 @@ export default ({ candles, delta, resolution }: Props) => {
 
     return (
       <div class="flex flex-col">
-        <div class="px-1 relative w-18 overflow-hidden border-l border-divider bg-well flex-1">
+        <div
+          class="px-1 relative w-18 overflow-hidden border-l border-divider bg-well flex-1"
+          style={{
+            transformOrigin: 'top left',
+            transform: `scaleY(${transform.scale}) translateY(${
+              transform.y / transform.scale
+            }px) `,
+          }}
+        >
           <Text y={y}>{ycurr.toFixed(2)}</Text>
           <Text y={y2}>{y2curr.toFixed(2)}</Text>
         </div>
@@ -195,6 +209,7 @@ export default ({ candles, delta, resolution }: Props) => {
         style={{
           position: 'absolute',
           left: p(x),
+          transform: `scaleX(${1 / transform.scale})`,
         }}
       >
         {children}
@@ -202,9 +217,19 @@ export default ({ candles, delta, resolution }: Props) => {
     )
 
     return (
-      <div class="px-1 relative w-full h-6 border-t border-divider bg-well">
-        <Text x={xSnapped}>{format()}</Text>
-      </div>
+      <>
+        <div
+          class="px-1 relative w-full h-6 border-t border-divider bg-well"
+          style={{
+            transformOrigin: 'top left',
+            transform: `scaleX(${transform.scale}) translateX(${
+              transform.x / transform.scale
+            }px) `,
+          }}
+        >
+          <Text x={xSnapped}>{format()}</Text>
+        </div>
+      </>
     )
   }
   const [size, setSize] = useState({ width: 0, height: 0 })
@@ -272,6 +297,7 @@ export default ({ candles, delta, resolution }: Props) => {
       <div class="relative flex-1 flex flex-col">
         <svg class="w-full h-full" ref={svgRef}>
           <g transform={stringTransform}>
+            <rect class="fill-well" x="0" y="0" width="100%" height="100%" />
             {['candles', 'both'].includes(viewMode) && <>{data.map(bar)}</>}
 
             {['lines', 'both'].includes(viewMode) && (
@@ -287,7 +313,8 @@ export default ({ candles, delta, resolution }: Props) => {
               x2={p(xSnapped)}
               y2="100%"
               class="stroke-medium"
-              strokeDasharray={4}
+              strokeWidth={1 / transform.scale}
+              strokeDasharray={4 / transform.scale}
             />
             <line
               x1="0"
@@ -295,7 +322,8 @@ export default ({ candles, delta, resolution }: Props) => {
               x2="100%"
               y2={p(y2)}
               class="stroke-medium"
-              strokeDasharray={4}
+              strokeWidth={1 / transform.scale}
+              strokeDasharray={4 / transform.scale}
             />
           </g>
         </svg>
