@@ -59,6 +59,7 @@
   --label-tuple: 0, 0, 0;
   --label-opacity: 0.87;
   color: rgba(var(--label-tuple), var(--label-opacity));
+  overflow: hidden;
 }
 
 :root.dark {
