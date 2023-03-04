@@ -54,6 +54,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Increment version number
+        run: pnpm version patch --no-git-tag-version
+
       - name: Build
         run: pnpm build:lib
       
