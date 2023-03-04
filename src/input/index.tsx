@@ -1,6 +1,7 @@
 import { omit } from 'lodash'
 import { classes } from '../classes'
 import styles from './index.module.css'
+import type React from 'react'
 
 export type InputProps = {
   type?: 'filled' | 'outlined'

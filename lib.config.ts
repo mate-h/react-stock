@@ -6,6 +6,14 @@ import dts from 'vite-plugin-dts'
 // https://vitejs.dev/config/
 export default defineConfig({
   base: './',
+  build: {
+    lib: {
+      entry: 'src/index.ts',
+      name: 'react-stock',
+      fileName: 'index',
+      formats: ['es'],
+    },
+  },
   plugins: [
     react({
       babel: {
@@ -13,5 +21,6 @@ export default defineConfig({
       },
     }),
     windi(),
+    dts(),
   ],
 })

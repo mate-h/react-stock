@@ -6,6 +6,7 @@ import { Field } from './field'
 import { useState } from 'react'
 import { symbolSearchAtom, viewModeAtom, resolutionAtom } from './chart/store'
 import { CandleResolution } from './chart/types'
+import type React from 'react'
 
 const ViewModes = () => {
   const [, setViewMode] = useAtom(viewModeAtom)
@@ -81,13 +82,13 @@ export default () => {
       </div>
       {!collapsed && (
         <form className="px-6 py-1 container mx-auto divide-y divide-divider space-y-1">
-          <Field label="Symbol" for="symbol">
+          <Field label="Symbol" htmlFor="symbol">
             <SearchInput />
           </Field>
-          <Field label="Resolution" for="resolution">
+          <Field label="Resolution" htmlFor="resolution">
             <ResolutionTabs />
           </Field>
-          <Field label="View" for="view-mode">
+          <Field label="View" htmlFor="view-mode">
             <ViewModes />
           </Field>
         </form>

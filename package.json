@@ -3,9 +3,12 @@
   "author": "Máté Homolya <mate.homolya@proton.me>",
   "version": "1.0.0",
   "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:lib": "tsc && vite build --config lib.config.ts",
     "preview": "vite preview"
   },
   "dependencies": {
