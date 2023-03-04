@@ -229,9 +229,10 @@ export function useScroll({
         touchDecelerateRef.current = true
       }
     }
-
+    const isTouch = 'ontouchstart' in window
     let cancelAnimation: number
     const animate = () => {
+      if (!isTouch) return
       const v = velocityRef.current
       const dx = v.x
       const dy = v.y
@@ -251,7 +252,7 @@ export function useScroll({
     el.addEventListener('mousewheel', handleMouseWheel)
     window.addEventListener('keydown', handleKeyDown)
     window.addEventListener('keyup', handleKeyUp)
-    const isTouch = 'ontouchstart' in window
+
     if (isTouch) {
       el.addEventListener('touchstart', touchStart)
       el.addEventListener('touchmove', touchMove)
