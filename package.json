@@ -1,7 +1,7 @@
 {
   "name": "@mateh/react-stock",
   "author": "Máté Homolya <mate.homolya@proton.me>",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -26,6 +26,7 @@
     "babel-plugin-react-html-attrs": "^3.0.5",
     "typescript": "^4.9.5",
     "vite": "^4.1.4",
+    "vite-plugin-dts": "^2.0.2",
     "vite-plugin-windicss": "^1.8.10",
     "windicss": "^3.5.6"
   }

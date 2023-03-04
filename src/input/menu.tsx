@@ -24,14 +24,14 @@ export default function ({
 }: Props) {
   return (
     <Menu as="span" className="relative inline-block">
-      <span class="inline-block">
+      <span className="inline-block">
         <Menu.Button
           className={getClasses(props, 'states', primary && styles.primary)}
         >
           Options
           <Icon
             name="chevron.down"
-            class="ml-2 text-medium"
+            className="ml-2 text-medium"
             aria-hidden="true"
           />
         </Menu.Button>
@@ -53,23 +53,23 @@ export default function ({
             side === 'left' && 'left-0 origin-top-left'
           )}
         >
-          <span class="inline-block px-1 py-1 w-full">
+          <span className="inline-block px-1 py-1 w-full">
             {options.map((option, i) => (
               <Menu.Item key={i}>
                 {({ active }) => (
                   <button
-                    class={`${
+                    className={`${
                       active ? 'bg-primary-700 text-white' : 'text-label'
                     } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
                   >
                     {active ? (
                       <Icon
                         name="circle.fill"
-                        class="mr-2"
+                        className="mr-2"
                         aria-hidden="true"
                       />
                     ) : (
-                      <Icon name="circle" class="mr-2" aria-hidden="true" />
+                      <Icon name="circle" className="mr-2" aria-hidden="true" />
                     )}
                     {option.name}
                   </button>

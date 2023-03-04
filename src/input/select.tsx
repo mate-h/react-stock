@@ -50,8 +50,8 @@ export function Select(props: SelectProps) {
               styles.select
             )}
           >
-            <span class="truncate">{props.options[selected].name}</span>
-            <Icon name="chevron.up.chevron.down" class="pl-2 text-medium" />
+            <span className="truncate">{props.options[selected].name}</span>
+            <Icon name="chevron.up.chevron.down" className="pl-2 text-medium" />
           </Listbox.Button>
 
           <Transition
@@ -74,7 +74,7 @@ export function Select(props: SelectProps) {
                   {({ selected, active }) => (
                     <>
                       <span
-                        class={`block truncate ${
+                        className={`block truncate ${
                           selected ? 'font-medium' : 'font-normal'
                         }`}
                       >
@@ -82,14 +82,14 @@ export function Select(props: SelectProps) {
                       </span>
                       {selected ? (
                         <span
-                          class={classes(
+                          className={classes(
                             active ? 'text-white' : 'text-primary',
                             'absolute inset-y-0 left-0 flex items-center pl-3'
                           )}
                         >
                           <Icon
                             name="checkmark"
-                            class="mr-2"
+                            className="mr-2"
                             aria-hidden="true"
                           />
                         </span>
@@ -107,7 +107,7 @@ export function Select(props: SelectProps) {
   return (
     <select
       {...omit(props, 'type', 'filled', 'outlined', 'options', 'native')}
-      class={getClasses(
+      className={getClasses(
         props,
         'states bg-states',
         styles.chevron,

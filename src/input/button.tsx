@@ -23,7 +23,7 @@ export default function (props: Props) {
         'filled',
         'outlined'
       )}
-      class={getClasses(props, 'states', props.primary && styles.primary)}
+      className={getClasses(props, 'states', props.primary && styles.primary)}
     >
       {props.children}
     </button>

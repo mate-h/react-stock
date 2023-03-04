@@ -11,7 +11,7 @@ export type ChartProps = {
 }
 
 export const Chart = ({ children }: ChartProps) => {
-  return <div class={classes.main}>{children}</div>
+  return <div className={classes.main}>{children}</div>
 }
 
 /**

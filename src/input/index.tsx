@@ -31,7 +31,7 @@ export function getClasses(props: InputProps,...moreClasses: (string|boolean|und
 export default function (props: Props) {
   return (
     <input
-      class={getClasses(props)}
+      className={getClasses(props)}
       {...omit(props, 'type', 'filled', 'outlined')}
     />
   )

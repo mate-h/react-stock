@@ -61,7 +61,7 @@ export default ({ candles, delta, resolution }: Props) => {
     return (
       <g key={d.date.getTime()}>
         <rect
-          class={classes(
+          className={classes(
             color === 'green' && 'fill-green-500',
             color === 'red' && 'fill-red-500',
             matches && 'stroke-label'
@@ -73,7 +73,7 @@ export default ({ candles, delta, resolution }: Props) => {
           strokeWidth={1 / transform.scale}
         />
         <line
-          class={classes(
+          className={classes(
             color === 'green' && 'stroke-green-500',
             color === 'red' && 'stroke-red-500'
           )}
@@ -94,7 +94,7 @@ export default ({ candles, delta, resolution }: Props) => {
     const y2 = ynorm(d2.open)
     return (
       <line
-        class="stroke-medium"
+        className="stroke-medium"
         key={d1.date.getTime()}
         x1={p(x1)}
         y1={p(y1)}
@@ -152,7 +152,7 @@ export default ({ candles, delta, resolution }: Props) => {
 
     const Text = ({ children, y }: { children: any; y: number }) => (
       <p
-        class="h-0 flex items-center text-xs"
+        className="h-0 flex items-center text-xs"
         style={{
           position: 'absolute',
           top: p(y),
@@ -164,9 +164,9 @@ export default ({ candles, delta, resolution }: Props) => {
     )
 
     return (
-      <div class="flex flex-col">
+      <div className="flex flex-col">
         <div
-          class="px-1 relative w-18 overflow-hidden border-l border-divider bg-well flex-1"
+          className="px-1 relative w-18 overflow-hidden border-l border-divider bg-well flex-1"
           style={{
             transformOrigin: 'top left',
             transform: `scaleY(${transform.scale}) translateY(${
@@ -177,7 +177,7 @@ export default ({ candles, delta, resolution }: Props) => {
           <Text y={y}>{ycurr.toFixed(2)}</Text>
           <Text y={y2}>{y2curr.toFixed(2)}</Text>
         </div>
-        <div class="h-6 bg-well" />
+        <div className="h-6 bg-well" />
       </div>
     )
   }
@@ -205,7 +205,7 @@ export default ({ candles, delta, resolution }: Props) => {
     }
     const Text = ({ children, x }: { children: any; x: number }) => (
       <p
-        class="flex items-center justify-center w-0 h-full text-xs h-full whitespace-nowrap"
+        className="flex items-center justify-center w-0 h-full text-xs h-full whitespace-nowrap"
         style={{
           position: 'absolute',
           left: p(x),
@@ -219,7 +219,7 @@ export default ({ candles, delta, resolution }: Props) => {
     return (
       <>
         <div
-          class="px-1 relative w-full h-6 border-t border-divider bg-well"
+          className="px-1 relative w-full h-6 border-t border-divider bg-well"
           style={{
             transformOrigin: 'top left',
             transform: `scaleX(${transform.scale}) translateX(${
@@ -257,7 +257,7 @@ export default ({ candles, delta, resolution }: Props) => {
 
     return (
       <g key={d1.date.getTime()}>
-        <path class="fill-well" d={d} />
+        <path className="fill-well" d={d} />
       </g>
     )
   }
@@ -293,11 +293,11 @@ export default ({ candles, delta, resolution }: Props) => {
   const [viewMode] = useAtom(viewModeAtom)
 
   return (
-    <div class="w-full h-full relative flex">
-      <div class="relative flex-1 flex flex-col">
-        <svg class="w-full h-full" ref={svgRef}>
+    <div className="w-full h-full relative flex">
+      <div className="relative flex-1 flex flex-col">
+        <svg className="w-full h-full" ref={svgRef}>
           <g transform={stringTransform}>
-            <rect class="fill-well" x="0" y="0" width="100%" height="100%" />
+            <rect className="fill-well" x="0" y="0" width="100%" height="100%" />
             {['candles', 'both'].includes(viewMode) && <>{data.map(bar)}</>}
 
             {['lines', 'both'].includes(viewMode) && (
@@ -312,7 +312,7 @@ export default ({ candles, delta, resolution }: Props) => {
               y1="0%"
               x2={p(xSnapped)}
               y2="100%"
-              class="stroke-medium"
+              className="stroke-medium"
               strokeWidth={1 / transform.scale}
               strokeDasharray={4 / transform.scale}
             />
@@ -321,7 +321,7 @@ export default ({ candles, delta, resolution }: Props) => {
               y1={p(y2)}
               x2="100%"
               y2={p(y2)}
-              class="stroke-medium"
+              className="stroke-medium"
               strokeWidth={1 / transform.scale}
               strokeDasharray={4 / transform.scale}
             />

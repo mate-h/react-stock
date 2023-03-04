@@ -36,9 +36,9 @@ export default function ({
           <div className="fixed inset-0 bg-black/60 transition-opacity" />
         </Transition.Child>
 
-        <div class="fixed z-10 inset-0 overflow-y-auto">
+        <div className="fixed z-10 inset-0 overflow-y-auto">
           <div
-            class={classes(
+            className={classes(
               'flex justify-center min-h-full p-4',
               sheet && 'p-0 pt-8 sm:p-4 items-start',
               !sheet && 'items-center text-center'
@@ -86,15 +86,15 @@ export default function ({
                   {children}
                 </div>
                 <button />
-                <div class="mt-5 sm:mt-6 flex justify-center">
+                <div className="mt-5 sm:mt-6 flex justify-center">
                   <button
                     tabIndex={-1}
                     type="button"
-                    class="inline-flex justify-center w-36 rounded-xl border border-transparent shadow-sm px-4 py-2 bg-primary-700 text-base font-medium text-white hover:bg-primary-800 sm:text-sm transition-colors duration-75"
+                    className="inline-flex justify-center w-36 rounded-xl border border-transparent shadow-sm px-4 py-2 bg-primary-700 text-base font-medium text-white hover:bg-primary-800 sm:text-sm transition-colors duration-75"
                     onClick={onClose}
                   >
                     Close
-                    <Icon name="xmark" class="pl-2" />
+                    <Icon name="xmark" className="pl-2" />
                   </button>
                 </div>
               </Dialog.Panel>

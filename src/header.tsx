@@ -53,34 +53,34 @@ export default () => {
   }
   return (
     <header>
-      <nav class="flex bg-well border-b border-divider relative z-10 space-x-2 p-2">
-        <h1 class="font-mono text-sm flex items-center flex-1">
+      <nav className="flex bg-well border-b border-divider relative z-10 space-x-2 p-2">
+        <h1 className="font-mono text-sm flex items-center flex-1">
           <a href="./">📈 react-stock</a>
         </h1>
         <a
           href="https://github.com/mate-h/react-stock"
           target="_blank"
           rel="noopener noreferrer"
-          class="flex items-center"
+          className="flex items-center"
         >
           <img
             src="./github.svg"
-            class="inline w-6 h-6 filter invert"
+            className="inline w-6 h-6 filter invert"
             alt="github"
           />
         </a>
       </nav>
-      <div class="container mx-auto px-6">
+      <div className="container mx-auto px-6">
         <button
           onClick={onToggle}
-          class="flex space-x-1 text-sm text-medium hover:text-label"
+          className="flex space-x-1 text-sm text-medium hover:text-label"
         >
           <span>Options</span>
           <Icon name="chevron.down" />
         </button>
       </div>
       {!collapsed && (
-        <form class="px-6 py-1 container mx-auto divide-y divide-divider space-y-1">
+        <form className="px-6 py-1 container mx-auto divide-y divide-divider space-y-1">
           <Field label="Symbol" for="symbol">
             <SearchInput />
           </Field>

@@ -31,7 +31,7 @@ export default (props: Props) => {
     <>
       <Button onClick={() => setDialogOpen(true)}>
         Options
-        <Icon name="chevron.down" class="ml-2 text-medium" />
+        <Icon name="chevron.down" className="ml-2 text-medium" />
       </Button>
 
       <Dialog
