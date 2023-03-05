@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { CandleDelta, CandleResolution } from './types'
+import { CandleDatum, CandleDelta, CandleResolution } from './types'
 import React from 'react'
 import { getTradingHours, getUnit } from './lib'
 import Candles from './candles'
@@ -8,8 +8,8 @@ import { useAtom } from 'jotai'
 
 export function CandleData() {
   const source = useSource()
-  const [candles, setCandles] = useAtom(candlesAtom)
-  const candlesRef = React.useRef(candles)
+  const [chunks, setChunks] = useAtom(candlesAtom)
+  const candlesRef = React.useRef(chunks)
   const [delta, setDelta] = useState<CandleDelta>()
 
   const [loaded, setLoaded] = useState(false)
@@ -24,33 +24,59 @@ export function CandleData() {
     if (resolutionRef.current !== resolution) {
       resolutionRef.current = resolution
     }
+    let index = 0
+    // check the current translation and load more data
 
-    load({ resolution })
+    load({ resolution, index })
   }, [source, resolution])
 
   const { preMarket, marketOpen, afterHours } = getTradingHours()
 
   const [newResolution, setNewResolution] = useState<CandleResolution>('1m')
 
-  async function load({ resolution }: { resolution: CandleResolution }) {
+  useEffect(() => {
+    console.log('chunk 0 size', chunks[0].length)
+    console.log('chunk count', chunks.length)
+  }, [chunks])
+
+  const chunkSize = 60
+  async function load({
+    resolution,
+    index,
+  }: {
+    resolution: CandleResolution
+    index: number
+  }) {
     console.log('loading ' + resolution)
     setLoading(true)
     loadingRef.current = true
+
+    const chunkOffset = chunkSize * index
+    const timeUnit = getUnit(resolution)
     const now = new Date()
-    const unitCount = 60
-    const hourAgo = new Date(now.getTime() - unitCount * getUnit(resolution))
-    const candles = await source!.getCandles({
+    const chunkStart = new Date(now.getTime() - chunkOffset * timeUnit)
+    const chunkEnd = new Date(chunkStart.getTime() - chunkSize * timeUnit)
+
+    const chunk = await source!.getCandles({
       symbol: 'BINANCE:BTCUSDT',
       type: 'crypto',
-      range: [hourAgo, now],
+      range: [chunkEnd, chunkStart],
       resolution,
     })
     setLoading(false)
     loadingRef.current = false
     setNewResolution(resolution)
-    setCandles(candles)
-    candlesRef.current = candles
-    return candles
+    setChunks([chunk])
+    candlesRef.current = [chunk]
+    return [chunk]
+  }
+  function addNewCandle(c: CandleDatum) {
+    const dc = candlesRef.current
+    // push into the data array and shift according to chunk size
+    dc[0].push(c)
+    dc[0].shift()
+    setChunks(dc)
+    candlesRef.current = dc
   }
 
   async function subscribe() {
@@ -58,8 +84,7 @@ export function CandleData() {
     source!.subscribe((d) => {
       setDelta(d)
       const dc = candlesRef.current
-      const lastCandle = dc[dc.length - 1]
-
+      const lastCandle = dc[0][dc[0].length - 1]
       const lastT = lastCandle.date.getTime()
       const currentT = d.date.getTime()
 
@@ -69,7 +94,7 @@ export function CandleData() {
         if (loadingRef.current) return
         console.log('new candle ', resolution)
         // new candle
-        dc.push({
+        addNewCandle({
           date: new Date(lastT + getUnit(resolution)),
           open: d.close,
           close: d.close,
@@ -82,9 +107,9 @@ export function CandleData() {
         lastCandle.close = d.close
         lastCandle.high = Math.max(lastCandle.high, d.close)
         lastCandle.low = Math.min(lastCandle.low, d.close)
+        candlesRef.current = dc
+        setChunks(dc)
       }
-      candlesRef.current = dc
-      setCandles(dc)
     })
   }
 
@@ -93,7 +118,7 @@ export function CandleData() {
     if (!source) return
 
     if (!loaded) {
-      load({ resolution })
+      load({ resolution, index: 0 })
       setLoaded(true)
     }
     if (!subscribed) {
@@ -103,5 +128,5 @@ export function CandleData() {
   }, [source, loaded, subscribed, resolution])
 
   // if (loading) return null
-  return <Candles candles={candles} delta={delta} resolution={newResolution} />
+  return <Candles chunks={chunks} delta={delta} resolution={newResolution} />
 }

@@ -9,17 +9,18 @@ import { getUnit } from './lib'
 import { useScroll } from '../scroll'
 
 type Props = {
-  candles: CandleDatum[]
+  chunks: CandleDatum[][]
   delta?: CandleDelta
   resolution: CandleResolution
 }
 
-export default ({ candles, delta, resolution }: Props) => {
+export default ({ chunks, delta, resolution }: Props) => {
   // console.log(data.length + ' results')
   // console.log(candles)
 
   const [unit, setUnit] = useState(10)
 
+  const candles = chunks[0]
   const [len, setLen] = useState(60)
   const data = candles
     .sort((a, b) => a.date.getTime() - b.date.getTime())
@@ -297,7 +298,13 @@ export default ({ candles, delta, resolution }: Props) => {
       <div className="relative flex-1 flex flex-col">
         <svg className="w-full h-full" ref={svgRef}>
           <g transform={stringTransform}>
-            <rect className="fill-well" x="0" y="0" width="100%" height="100%" />
+            <rect
+              className="fill-well"
+              x="0"
+              y="0"
+              width="100%"
+              height="100%"
+            />
             {['candles', 'both'].includes(viewMode) && <>{data.map(bar)}</>}
 
             {['lines', 'both'].includes(viewMode) && (

@@ -11,7 +11,7 @@ const sourcesAtom = atom<Keyed<ChartSource>>({})
 export const viewModeAtom = atom('candles')
 export const symbolSearchAtom = atom('BTCUSDT')
 export const resolutionAtom = atom<CandleResolution>('1m')
-export const candlesAtom = atom<CandleDatum[]>([])
+export const candlesAtom = atom<CandleDatum[][]>([[]])
 
 export const useChart = () => useAtom(chartAtom)
 export const useSources = () => useAtom(sourcesAtom)
