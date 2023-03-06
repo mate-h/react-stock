@@ -66,9 +66,11 @@ export function CandleData() {
     setLoading(false)
     loadingRef.current = false
     setNewResolution(resolution)
-    setChunks([chunk])
-    candlesRef.current = [chunk]
-    return [chunk]
+    const dc = candlesRef.current
+    dc[index] = chunk
+    setChunks(dc)
+    candlesRef.current = dc
+    return dc
   }
   function addNewCandle(c: CandleDatum) {
     const dc = candlesRef.current
@@ -118,8 +120,12 @@ export function CandleData() {
     if (!source) return
 
     if (!loaded) {
-      load({ resolution, index: 0 })
-      setLoaded(true)
+      async function l() {
+        await load({ resolution, index: 0 })
+        await load({ resolution, index: 1 })
+        setLoaded(true)
+      }
+      l()
     }
     if (!subscribed) {
       subscribe()
@@ -128,5 +134,12 @@ export function CandleData() {
   }, [source, loaded, subscribed, resolution])
 
   // if (loading) return null
-  return <Candles chunks={chunks} delta={delta} resolution={newResolution} />
+  return (
+    <Candles
+      chunks={chunks}
+      chunkSize={chunkSize}
+      delta={delta}
+      resolution={newResolution}
+    />
+  )
 }

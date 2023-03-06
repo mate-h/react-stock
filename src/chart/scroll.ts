@@ -1,15 +1,19 @@
+import { useAtom } from 'jotai'
 import { RefObject, useEffect, useRef, useState } from 'react'
+import { transformAtom } from './store'
+
+export type Transform = {
+  x: number
+  y: number
+  scale: number
+}
 
 export function useScroll({
   node,
 }: {
   node: RefObject<HTMLElement | SVGElement>
 }) {
-  const [transform, setTransform] = useState({
-    x: 0,
-    y: 0,
-    scale: 1,
-  })
+  const [transform, setTransform] = useAtom(transformAtom)
   const transformRef = useRef(transform)
   const [dragging, setDragging] = useState(false)
   const [mouseDown, setMouseDown] = useState(false)
