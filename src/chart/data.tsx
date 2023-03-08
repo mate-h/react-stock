@@ -82,6 +82,7 @@ export function CandleData() {
   }
 
   async function subscribe() {
+    if (source!.subscribe === undefined) return
     console.log('subscribing')
     source!.subscribe((d) => {
       setDelta(d)
@@ -120,12 +121,8 @@ export function CandleData() {
     if (!source) return
 
     if (!loaded) {
-      async function l() {
-        await load({ resolution, index: 0 })
-        await load({ resolution, index: 1 })
-        setLoaded(true)
-      }
-      l()
+      setLoaded(true)
+      load({ resolution, index: 0 })
     }
     if (!subscribed) {
       subscribe()

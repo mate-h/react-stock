@@ -3,6 +3,11 @@ import plugin from 'windicss/plugin'
 
 export default defineConfig({
   darkMode: 'class',
+  extract: {
+    include: [
+      'src/**/*.{ts,tsx,html,css}',
+    ],
+  },
   theme: {
     extend: {
       colors: {

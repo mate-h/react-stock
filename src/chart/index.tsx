@@ -19,7 +19,7 @@ export const Chart = ({ children }: ChartProps) => {
  */
 export const Source = (props: {
   getCandles: GetCandles
-  subscribe: Subscribe
+  subscribe?: Subscribe
 }) => {
   const [chart] = useChart()
   const [sources, setSources] = useSources()
