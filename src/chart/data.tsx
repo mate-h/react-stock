@@ -12,6 +12,8 @@ export function CandleData() {
   const candlesRef = React.useRef(chunks)
   const [delta, setDelta] = useState<CandleDelta>()
 
+  let symbol = 'BINANCE:BTCUSDT'
+
   const [loaded, setLoaded] = useState(false)
   const [loading, setLoading] = useState(true)
   const [subscribed, setSubscribed] = useState(false)
@@ -133,6 +135,7 @@ export function CandleData() {
   // if (loading) return null
   return (
     <Candles
+      symbol={symbol}
       chunks={chunks}
       chunkSize={chunkSize}
       delta={delta}
