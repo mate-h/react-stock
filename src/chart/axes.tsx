@@ -3,6 +3,7 @@ import { RefObject, useEffect, useMemo, useRef, useState } from 'react'
 import { usePointer, useTransformedPointer } from '../pointer'
 import { useScroll } from './scroll'
 import { CandleDatum, CandleDelta, CandleResolution } from './types'
+import { useRenderContext, p } from './lib'
 
 type Props = {
   chunks: CandleDatum[][]
@@ -12,6 +13,32 @@ type Props = {
   node: RefObject<SVGSVGElement>
 }
 
+export const ChartLines = ({ node }: Pick<Props, 'node'>) => {
+  const { x: lx, y: ly } = usePointer({ node })
+  return (
+    <g>
+      <line
+        x1={p(lx)}
+        y1="0%"
+        x2={p(lx)}
+        y2="100%"
+        className="stroke-medium"
+        strokeWidth={1}
+        strokeDasharray={4}
+      />
+      <line
+        x1="0"
+        y1={p(ly)}
+        x2="100%"
+        y2={p(ly)}
+        className="stroke-medium"
+        strokeWidth={1}
+        strokeDasharray={4}
+      />
+    </g>
+  )
+}
+
 export const ChartAxes = ({
   node,
   chunks,
@@ -19,24 +46,10 @@ export const ChartAxes = ({
   resolution,
   children,
 }: Props) => {
-  const candles = flatten(chunks)
-  const len = candles.length
-  const data = candles
-    .sort((a, b) => a.date.getTime() - b.date.getTime())
-    .filter((e, i) => i >= candles.length - len)
-
-  const norm = (x: number, min: number, max: number) => {
-    return (max - x) / (max - min)
-  }
-  /** percent */
-  const p = (x: number) => (isNaN(x) ? '0%' : `${x * 100}%`)
-
-  const yflat = flatten(data.map((d) => [d.open, d.close, d.high, d.low]))
-  const ymax = max(yflat) || 0
-  const ymin = min(yflat) || 0
-  const ynorm = (y: number) => {
-    return norm(y, ymin, ymax)
-  }
+  const { data, len, ynorm, ymin, ymax } = useRenderContext(
+    chunks[0],
+    resolution
+  )
 
   const transform = useScroll({ node })
   const transformRef = useRef(transform)
@@ -98,9 +111,9 @@ export const ChartAxes = ({
 
   const TimeAxis = () => {
     function format() {
-      if (data.length === 0) return ''
-      let index = Math.round(xSnapped * (data.length - 1))
-      if (index > data.length - 1) return ''
+      if (len === 0) return ''
+      let index = Math.round(xSnapped * (len - 1))
+      if (index > len - 1) return ''
       if (index < 0) return ''
       const date = data[index].date
       const fmt = new Intl.DateTimeFormat('en', {
@@ -146,34 +159,12 @@ export const ChartAxes = ({
     )
   }
 
-  const { x: lx, y: ly } = usePointer({ node })
-
   return (
     <div className="w-full h-full relative flex">
       <div className="relative flex-1 flex flex-col">
         <svg className="w-full h-full" ref={node}>
           {children}
-
-          <g>
-            <line
-              x1={p(lx)}
-              y1="0%"
-              x2={p(lx)}
-              y2="100%"
-              className="stroke-medium"
-              strokeWidth={1}
-              strokeDasharray={4}
-            />
-            <line
-              x1="0"
-              y1={p(ly)}
-              x2="100%"
-              y2={p(ly)}
-              className="stroke-medium"
-              strokeWidth={1}
-              strokeDasharray={4}
-            />
-          </g>
+          <ChartLines node={node} />
         </svg>
         <TimeAxis />
       </div>

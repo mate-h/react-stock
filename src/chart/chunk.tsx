@@ -2,7 +2,7 @@ import { useAtom } from 'jotai'
 import { chunk, flatten, max, min } from 'lodash'
 import { useMemo } from 'react'
 import { classes } from '../classes'
-import { getUnit } from './lib'
+import { formatInterval, useRenderContext, getUnit, p } from './lib'
 import { transformAtom, viewModeAtom } from './store'
 import { CandleDatum, CandleDelta, CandleResolution } from './types'
 
@@ -24,44 +24,18 @@ export const CandleChunk = ({
   const [transform] = useAtom(transformAtom)
   const [viewMode] = useAtom(viewModeAtom)
 
-  const len = candles.length
-  const data = candles.sort((a, b) => a.date.getTime() - b.date.getTime())
-  const lastCandle = data[data.length - 1]
-  const firstCandle = data[0]
+  const {
+    len,
+    xnorm,
+    ynorm,
+    firstCandle,
+    lastCandle,
+    xmin,
+    xmax,
+    lineGroups,
+    data,
+  } = useRenderContext(candles, resolution)
 
-  const norm = (x: number, min: number, max: number) => {
-    return (max - x) / (max - min)
-  }
-  /** percent */
-  const p = (x: number) => (isNaN(x) ? '0%' : `${x * 100}%`)
-
-  const yflat = flatten(data.map((d) => [d.open, d.close, d.high, d.low]))
-  const ymax = max(yflat) || 0
-  const ymin = min(yflat) || 0
-  const ynorm = (y: number) => {
-    return norm(y, ymin, ymax)
-  }
-  const selectx = (d: CandleDatum) => d.date.getTime()
-  const xmin = min(data.map((d) => d.date.getTime())) || 0
-  const xmax = max(data.map((d) => d.date.getTime())) || 0
-  const xnorm = (d: CandleDatum) => {
-    const timeUnit = getUnit(resolution)
-    return 1 - norm(selectx(d), xmin, xmax + timeUnit)
-  }
-  function formatInterval(from: Date, to: Date) {
-    const fmt = Intl.DateTimeFormat('en', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric',
-    })
-    const fmt2 = Intl.DateTimeFormat('en', {
-      hour: 'numeric',
-      minute: 'numeric',
-    })
-    return `${fmt.format(from)} - ${fmt2.format(to)}`
-  }
   function bar(d: CandleDatum, i: number) {
     const pad = 1 / 5 / len
     const x = xnorm(d) + pad / 2
@@ -104,7 +78,6 @@ export const CandleChunk = ({
     )
   }
   function line([d1, d2]: CandleDatum[]) {
-    const u = 1 / len
     const x1 = xnorm(d1)
     const y1 = ynorm(d1.open)
     const x2 = xnorm(d2)
@@ -121,10 +94,11 @@ export const CandleChunk = ({
       />
     )
   }
+  /**
+   * top of the area is the area between high and low
+   * bottom of the area is the area between open and close
+   */
   function area([d1, d2]: CandleDatum[]) {
-    // top of the area is the area between high and low
-    // bottom of the area is the area between open and close
-
     const sx = size.width
     const sy = size.height
     const u = 1 / len
@@ -140,7 +114,6 @@ export const CandleChunk = ({
       L ${x2} ${y2h}
       L ${x2} ${y2l}
       L ${x1} ${y1l}
-      
     `
 
     return (
@@ -149,15 +122,6 @@ export const CandleChunk = ({
       </g>
     )
   }
-
-  const lineGroups = chunk(
-    data.reduce((a, c, i) => {
-      a.push(c)
-      if (i > 0 && i < data.length - 1) a.push(c)
-      return a
-    }, [] as CandleDatum[]),
-    2
-  )
 
   const stringTransform = useMemo(() => {
     return `translate(${transform.x} ${transform.y}) scale(${transform.scale})`
