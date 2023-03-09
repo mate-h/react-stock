@@ -1,9 +1,10 @@
-import { flatten, max, min } from 'lodash'
-import { RefObject, useEffect, useMemo, useRef, useState } from 'react'
-import { usePointer, useTransformedPointer } from '../pointer'
+import { RefObject, useEffect, useMemo, useRef } from 'react'
+import { useTransformedPointer } from '../pointer'
 import { useScroll } from './scroll'
 import { CandleDatum, CandleDelta, CandleResolution } from './types'
-import { useRenderContext, p } from './lib'
+import { useRenderContext } from './render-context'
+import { ChartLines } from './lines'
+import { AxesText } from './axes-text'
 
 type Props = {
   chunks: CandleDatum[][]
@@ -11,32 +12,6 @@ type Props = {
   resolution: CandleResolution
   children: any
   node: RefObject<SVGSVGElement>
-}
-
-export const ChartLines = ({ node }: Pick<Props, 'node'>) => {
-  const { x: lx, y: ly } = usePointer({ node })
-  return (
-    <g>
-      <line
-        x1={p(lx)}
-        y1="0%"
-        x2={p(lx)}
-        y2="100%"
-        className="stroke-medium"
-        strokeWidth={1}
-        strokeDasharray={4}
-      />
-      <line
-        x1="0"
-        y1={p(ly)}
-        x2="100%"
-        y2={p(ly)}
-        className="stroke-medium"
-        strokeWidth={1}
-        strokeDasharray={4}
-      />
-    </g>
-  )
 }
 
 export const ChartAxes = ({
@@ -77,19 +52,6 @@ export const ChartAxes = ({
     const ycurr = useMemo(() => ymin + range * (1 - y), [y, ymin, ymax])
     const y2curr = useMemo(() => ymin + range * (1 - y2), [y2, ymin, ymax])
 
-    const Text = ({ children, y }: { children: any; y: number }) => (
-      <p
-        className="h-0 flex items-center text-xs"
-        style={{
-          position: 'absolute',
-          top: p(y),
-          transform: `scaleY(${1 / transform.scale})`,
-        }}
-      >
-        {children}
-      </p>
-    )
-
     return (
       <div className="flex flex-col">
         <div
@@ -101,8 +63,12 @@ export const ChartAxes = ({
             }px) `,
           }}
         >
-          <Text y={y}>{ycurr.toFixed(2)}</Text>
-          <Text y={y2}>{y2curr.toFixed(2)}</Text>
+          <AxesText y={y} scale={transform.scale}>
+            {ycurr.toFixed(2)}
+          </AxesText>
+          <AxesText y={y2} scale={transform.scale}>
+            {y2curr.toFixed(2)}
+          </AxesText>
         </div>
         <div className="h-6 bg-well" />
       </div>
@@ -129,18 +95,6 @@ export const ChartAxes = ({
       } catch (e) {}
       return str
     }
-    const Text = ({ children, x }: { children: any; x: number }) => (
-      <p
-        className="flex items-center justify-center w-0 h-full text-xs h-full whitespace-nowrap"
-        style={{
-          position: 'absolute',
-          left: p(x),
-          transform: `scaleX(${1 / transform.scale})`,
-        }}
-      >
-        {children}
-      </p>
-    )
 
     return (
       <>
@@ -153,7 +107,9 @@ export const ChartAxes = ({
             }px) `,
           }}
         >
-          <Text x={xSnapped}>{format()}</Text>
+          <AxesText horizontal x={xSnapped} scale={transform.scale}>
+            {format()}
+          </AxesText>
         </div>
       </>
     )
