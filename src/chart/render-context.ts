@@ -8,10 +8,13 @@ import { CandleDatum, CandleResolution } from './types'
  * @param resolution candle resolution
  * @returns useful functions for rendering the chart
  */
-export function useRenderContext(
-  candles: CandleDatum[],
+export function useRenderContext({
+  candles,
+  resolution,
+}: {
+  candles: CandleDatum[]
   resolution: CandleResolution
-) {
+}) {
   const len = candles.length
   const data = candles.sort((a, b) => a.date.getTime() - b.date.getTime())
   const lastCandle = data[data.length - 1]

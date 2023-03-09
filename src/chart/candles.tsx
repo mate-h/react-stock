@@ -1,6 +1,12 @@
 import { RefObject, useEffect, useRef, useState } from 'react'
-import { ChartAxes } from './axes'
+import { useTransformedPointer } from '../pointer'
+import { PriceAxis } from './axes/price'
+import { TimeAxis } from './axes/time'
 import { CandleChunk } from './chunk'
+import { ChartLines } from './lines'
+import { useNodeSize } from './node-size'
+import { useRenderContext } from './render-context'
+import { useScroll } from './scroll'
 import { CandleDatum, CandleDelta, CandleResolution } from './types'
 
 type Props = {
@@ -11,47 +17,52 @@ type Props = {
   resolution: CandleResolution
 }
 
-function useSizedSvg({ node }: { node: RefObject<SVGSVGElement> }) {
-  const [size, setSize] = useState({ width: 0, height: 0 })
-  useEffect(() => {
-    if (node.current) {
-      const listener = () => {
-        const c = node.current!
-        const { width, height } = c.getBoundingClientRect()
-        setSize({ width, height })
-        c.setAttribute('viewBox', `0 0 ${width} ${height}`)
-      }
-      listener()
-
-      const observer = new ResizeObserver(listener)
-      observer.observe(node.current)
-
-      return () => {
-        observer.disconnect()
-      }
-    }
-  }, [])
-  return size
-}
-
 export default ({ symbol, chunks, chunkSize, delta, resolution }: Props) => {
-  const svgRef = useRef<SVGSVGElement>(null)
-  const size = useSizedSvg({ node: svgRef })
+  const node = useRef<SVGSVGElement>(null)
+  const size = useNodeSize({ node })
+
+  const candles = chunks[0]
+  const { ynorm } = useRenderContext({ candles, resolution })
+
+  const transform = useScroll({ node })
+  const transformRef = useRef(transform)
+  useEffect(() => {
+    transformRef.current = transform
+  }, [transform])
+  let { x, y } = useTransformedPointer({ node, transformRef })
+
+  let y2
+  if (delta) {
+    y2 = ynorm(delta.close)
+  }
+
   return (
-    <ChartAxes
-      node={svgRef}
-      chunks={chunks}
-      delta={delta}
-      resolution={resolution}
-    >
-      <CandleChunk
-        symbol={symbol}
-        candles={chunks[0]}
-        chunkSize={chunkSize}
-        delta={delta}
+    <div className="w-full h-full relative flex">
+      <div className="relative flex-1 flex flex-col">
+        <svg className="w-full h-full" ref={node}>
+          <ChartLines node={node} />
+          <CandleChunk
+            symbol={symbol}
+            candles={chunks[0]}
+            chunkSize={chunkSize}
+            delta={delta}
+            resolution={resolution}
+            size={{ width: size.width, height: size.height }}
+          />
+        </svg>
+        <TimeAxis
+          candles={candles}
+          resolution={resolution}
+          transform={transform}
+          marks={[x]}
+        />
+      </div>
+      <PriceAxis
+        candles={candles}
         resolution={resolution}
-        size={{ width: size.width, height: size.height }}
+        transform={transform}
+        marks={[y, y2]}
       />
-    </ChartAxes>
+    </div>
   )
 }

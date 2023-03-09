@@ -35,7 +35,7 @@ export const CandleChunk = ({
     xmax,
     lineGroups,
     data,
-  } = useRenderContext(candles, resolution)
+  } = useRenderContext({ candles, resolution })
 
   function bar(d: CandleDatum, i: number) {
     const pad = 1 / 5 / len

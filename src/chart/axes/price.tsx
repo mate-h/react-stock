@@ -11,7 +11,7 @@ type Props = {
   transform: Transform
 }
 export const PriceAxis = ({ candles, resolution, marks, transform }: Props) => {
-  const { ymin, ymax } = useRenderContext(candles, resolution)
+  const { ymin, ymax } = useRenderContext({ candles, resolution })
   const range = ymax - ymin
   const currentMarks = useMemo(
     () =>
