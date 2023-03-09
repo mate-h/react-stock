@@ -1,10 +1,11 @@
 import { RefObject, useEffect, useMemo, useRef } from 'react'
-import { useTransformedPointer } from '../pointer'
-import { useScroll } from './scroll'
-import { CandleDatum, CandleDelta, CandleResolution } from './types'
-import { useRenderContext } from './render-context'
-import { ChartLines } from './lines'
-import { AxesText } from './axes-text'
+import { useTransformedPointer } from '../../pointer'
+import { useScroll } from '../scroll'
+import { CandleDatum, CandleDelta, CandleResolution } from '../types'
+import { useRenderContext } from '../render-context'
+import { ChartLines } from '../lines'
+import { AxesText } from './text'
+import { PriceAxis } from './price'
 
 type Props = {
   chunks: CandleDatum[][]
@@ -21,10 +22,8 @@ export const ChartAxes = ({
   resolution,
   children,
 }: Props) => {
-  const { data, len, ynorm, ymin, ymax } = useRenderContext(
-    chunks[0],
-    resolution
-  )
+  const candles = chunks[0]
+  const { data, len, ynorm, ymin, ymax } = useRenderContext(candles, resolution)
 
   const transform = useScroll({ node })
   const transformRef = useRef(transform)
@@ -46,34 +45,6 @@ export const ChartAxes = ({
       ),
     [x, len]
   )
-
-  const PriceAxis = () => {
-    const range = ymax - ymin
-    const ycurr = useMemo(() => ymin + range * (1 - y), [y, ymin, ymax])
-    const y2curr = useMemo(() => ymin + range * (1 - y2), [y2, ymin, ymax])
-
-    return (
-      <div className="flex flex-col">
-        <div
-          className="px-1 relative w-18 overflow-hidden border-l border-divider bg-well flex-1"
-          style={{
-            transformOrigin: 'top left',
-            transform: `scaleY(${transform.scale}) translateY(${
-              transform.y / transform.scale
-            }px) `,
-          }}
-        >
-          <AxesText y={y} scale={transform.scale}>
-            {ycurr.toFixed(2)}
-          </AxesText>
-          <AxesText y={y2} scale={transform.scale}>
-            {y2curr.toFixed(2)}
-          </AxesText>
-        </div>
-        <div className="h-6 bg-well" />
-      </div>
-    )
-  }
 
   const TimeAxis = () => {
     function format() {
@@ -124,7 +95,12 @@ export const ChartAxes = ({
         </svg>
         <TimeAxis />
       </div>
-      <PriceAxis />
+      <PriceAxis
+        candles={candles}
+        resolution={resolution}
+        transform={transform}
+        marks={[y, y2]}
+      />
     </div>
   )
 }

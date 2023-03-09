@@ -1,4 +1,4 @@
-import { p } from './lib'
+import { p } from '../lib'
 
 export const AxesText = ({
   children,
