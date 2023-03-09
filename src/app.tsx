@@ -4,14 +4,18 @@ import { getCandles, useFinnhub } from './finnhub'
 import Header from './header'
 
 function App() {
-  const { subscribe } = useFinnhub()
+  const { subscribe, unsubscribe } = useFinnhub()
   return (
     <main className="flex flex-col h-full">
       <Header />
       <section className="container mx-auto px-6 pb-6 space-y-6 flex-1">
         <div className="relative h-full">
           <Chart>
-            <Source getCandles={getCandles} subscribe={subscribe} />
+            <Source
+              getCandles={getCandles}
+              subscribe={subscribe}
+              unsubscribe={unsubscribe}
+            />
             <CandleData />
           </Chart>
         </div>

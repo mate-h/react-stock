@@ -1,18 +1,38 @@
 import { useEffect, useRef, useState } from 'react'
 import { CandleDatum, CandleDelta, CandleResolution } from './types'
 import React from 'react'
-import { getTradingHours, getUnit } from './lib'
+import { getUnit } from './lib'
 import Candles from './candles'
-import { useSource, resolutionAtom, candlesAtom } from './store'
+import {
+  useSource,
+  resolutionAtom,
+  candlesAtom,
+  symbolSearchAtom,
+  defaultMarket,
+  candleTypeAtom,
+} from './store'
 import { useAtom } from 'jotai'
 
-export function CandleData() {
+type Market = 'binance'
+type Props = {
+  market?: Market
+  symbol?: string
+}
+
+export function CandleData(props: Props) {
+  const { market = defaultMarket } = props
   const source = useSource()
   const [chunks, setChunks] = useAtom(candlesAtom)
   const candlesRef = React.useRef(chunks)
   const [delta, setDelta] = useState<CandleDelta>()
+  const [search] = useAtom(symbolSearchAtom)
+  const [candleType] = useAtom(candleTypeAtom)
 
-  let symbol = 'BINANCE:BTCUSDT'
+  let symbol = `${search}`
+  if (candleType === 'crypto') {
+    symbol = `${market}:${search}`.toUpperCase()
+  }
+  let prevSymbolRef = useRef("")
 
   const [loaded, setLoaded] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -20,6 +40,36 @@ export function CandleData() {
   const [resolution] = useAtom(resolutionAtom)
   const resolutionRef = useRef(resolution)
   const loadingRef = useRef(loading)
+
+  function onUpdate(d: CandleDelta) {
+    setDelta(d)
+    const dc = candlesRef.current
+    const lastCandle = dc[0][dc[0].length - 1]
+    if (!lastCandle) return
+    const lastT = lastCandle.date.getTime()
+    const currentT = d.date.getTime()
+    const res = resolutionRef.current
+    if (currentT - lastT > getUnit(res)) {
+      if (loadingRef.current) return
+      console.log('new candle ', res)
+      // new candle
+      addNewCandle({
+        date: new Date(lastT + getUnit(res)),
+        open: d.close,
+        close: d.close,
+        high: d.close,
+        low: d.close,
+        volume: 0,
+      })
+    } else {
+      // update last candle
+      lastCandle.close = d.close
+      lastCandle.high = Math.max(lastCandle.high, d.close)
+      lastCandle.low = Math.min(lastCandle.low, d.close)
+      candlesRef.current = dc
+      setChunks(dc)
+    }
+  }
 
   useEffect(() => {
     if (!source) return
@@ -31,8 +81,6 @@ export function CandleData() {
 
     load({ resolution, index })
   }, [source, resolution])
-
-  const { preMarket, marketOpen, afterHours } = getTradingHours()
 
   const [newResolution, setNewResolution] = useState<CandleResolution>('1m')
 
@@ -60,8 +108,8 @@ export function CandleData() {
     const chunkEnd = new Date(chunkStart.getTime() - chunkSize * timeUnit)
 
     const chunk = await source!.getCandles({
-      symbol: 'BINANCE:BTCUSDT',
-      type: 'crypto',
+      symbol,
+      type: candleType,
       range: [chunkEnd, chunkStart],
       resolution,
     })
@@ -85,36 +133,24 @@ export function CandleData() {
 
   async function subscribe() {
     if (source!.subscribe === undefined) return
-    console.log('subscribing')
-    source!.subscribe((d) => {
-      setDelta(d)
-      const dc = candlesRef.current
-      const lastCandle = dc[0][dc[0].length - 1]
-      const lastT = lastCandle.date.getTime()
-      const currentT = d.date.getTime()
+    console.log('[DEBUG] subscribing', {
+      onUpdate,
+      symbol,
+    })
+    prevSymbolRef.current = symbol
+    source!.subscribe({
+      onUpdate,
+      symbol,
+    })
+  }
 
-      const resolution = resolutionRef.current
-
-      if (currentT - lastT > getUnit(resolution)) {
-        if (loadingRef.current) return
-        console.log('new candle ', resolution)
-        // new candle
-        addNewCandle({
-          date: new Date(lastT + getUnit(resolution)),
-          open: d.close,
-          close: d.close,
-          high: d.close,
-          low: d.close,
-          volume: 0,
-        })
-      } else {
-        // update last candle
-        lastCandle.close = d.close
-        lastCandle.high = Math.max(lastCandle.high, d.close)
-        lastCandle.low = Math.min(lastCandle.low, d.close)
-        candlesRef.current = dc
-        setChunks(dc)
-      }
+  async function unsubscribe() {
+    if (source!.unsubscribe === undefined) return
+    console.log('[DEBUG] unsubscribing', {
+      symbol: prevSymbolRef.current,
+    })
+    source!.unsubscribe({
+      symbol: prevSymbolRef.current,
     })
   }
 
@@ -131,6 +167,20 @@ export function CandleData() {
       setSubscribed(true)
     }
   }, [source, loaded, subscribed, resolution])
+
+  /** Refetch on symbol change and unsubscribe and resubscribe */
+  useEffect(() => {
+    if (!source) return
+    if (symbol === undefined) return
+    setLoaded(false)
+    unsubscribe()
+    setChunks([[]])
+    candlesRef.current = [[]]
+
+    load({ resolution, index: 0 })
+    subscribe()
+    setLoaded(true)
+  }, [symbol])
 
   // if (loading) return null
   return (

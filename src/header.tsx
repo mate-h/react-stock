@@ -4,9 +4,14 @@ import Input from './input'
 import { Icon } from './icon'
 import { Field } from './field'
 import { useState } from 'react'
-import { symbolSearchAtom, viewModeAtom, resolutionAtom } from './chart/store'
+import {
+  symbolSearchAtom,
+  viewModeAtom,
+  resolutionAtom,
+} from './chart/store'
 import { CandleResolution } from './chart/types'
 import type React from 'react'
+import { debounce } from 'lodash'
 
 const ViewModes = () => {
   const [, setViewMode] = useAtom(viewModeAtom)
@@ -20,13 +25,20 @@ const ViewModes = () => {
 }
 
 const SearchInput = () => {
-  const [search, setSearch] = useAtom(symbolSearchAtom)
+  const [globalSearch, setGlobal] = useAtom(symbolSearchAtom)
+  const [search, setSearch] = useState(globalSearch)
+  const debounced = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
+    setGlobal(e.target.value)
+  }, 300)
   return (
     <Input
       id="symbol"
       placeholder="Search"
-      onChange={(e) => setSearch(e.target.value)}
       value={search}
+      onChange={(e) => {
+        setSearch(e.target.value)
+        debounced(e)
+      }}
     />
   )
 }

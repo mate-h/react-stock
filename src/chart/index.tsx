@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import classes from './styles.module.css'
-import { GetCandles, Subscribe } from './types'
+import { GetCandles, Subscribe, Unsubscribe } from './types'
 import { clone, get, merge, set } from 'lodash'
 import React from 'react'
 import { useChart, useSources } from './store'
@@ -20,6 +20,7 @@ export const Chart = ({ children }: ChartProps) => {
 export const Source = (props: {
   getCandles: GetCandles
   subscribe?: Subscribe
+  unsubscribe?: Unsubscribe
 }) => {
   const [chart] = useChart()
   const [sources, setSources] = useSources()

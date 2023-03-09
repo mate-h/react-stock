@@ -22,6 +22,8 @@ export type CandleResolution =
   | '1w'
   | '1M'
 
+export type CandleType = 'crypto' | 'stock'
+
 export interface ChartChild {
   chartId: string
 }
@@ -35,6 +37,7 @@ export interface ChartSource extends ChartChild {
   id: string
   getCandles: GetCandles
   subscribe: Subscribe
+  unsubscribe: ({ symbol }: { symbol: string }) => void
 }
 
 export interface ChartType {
@@ -48,11 +51,18 @@ export type CandleDelta = {
 
 export type Listener = (d: CandleDelta) => void
 
-export type Subscribe = (listener: Listener) => void
+export type Subscriber = {
+  onUpdate: Listener
+  symbol: string
+}
+
+export type Subscribe = (props: Subscriber) => void
+
+export type Unsubscribe = (props: { symbol: string }) => void
 
 export type GetCandles = (props: {
   symbol: string
-  type: 'crypto' | 'stock'
+  type: CandleType
   range: [Date, Date]
   resolution: CandleResolution
 }) => Promise<CandleDatum[]>

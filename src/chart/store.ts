@@ -1,16 +1,19 @@
 import { atom, useAtom } from 'jotai'
 import { useEffect, useState } from 'react'
 import { Transform } from './scroll'
-import { CandleDatum, CandleResolution, ChartSource, Keyed } from './types'
+import { CandleDatum, CandleResolution, CandleType, ChartSource, Keyed } from './types'
 import { uid } from './util'
 
 const chartAtom = atom({
   id: uid(),
 })
+export const defaultMarket = 'binance';
+export const defaultSymbol = 'BTCUSDT';
 
 const sourcesAtom = atom<Keyed<ChartSource>>({})
 export const viewModeAtom = atom('candles')
-export const symbolSearchAtom = atom('BTCUSDT')
+export const symbolSearchAtom = atom(defaultSymbol)
+export const candleTypeAtom = atom<CandleType>('crypto')
 export const resolutionAtom = atom<CandleResolution>('1m')
 export const candlesAtom = atom<CandleDatum[][]>([[]])
 export const transformAtom = atom<Transform>({
