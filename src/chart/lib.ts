@@ -3,6 +3,11 @@ import { CandleResolution } from './types'
 /** percent */
 export const p = (x: number) => (isNaN(x) ? '0%' : `${x * 100}%`)
 
+/** Normalize a value between a min and max */
+export const norm = (x: number, min: number, max: number) => {
+  return (max - x) / (max - min)
+}
+
 /** Interval format to string */
 export function formatInterval(from: Date, to: Date) {
   const fmt = Intl.DateTimeFormat('en', {

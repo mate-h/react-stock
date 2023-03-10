@@ -1,3 +1,4 @@
+import { flatten } from 'lodash'
 import { RefObject, useEffect, useRef, useState } from 'react'
 import { useTransformedPointer } from '../pointer'
 import { PriceAxis } from './axes/price'
@@ -21,8 +22,9 @@ export default ({ symbol, chunks, chunkSize, delta, resolution }: Props) => {
   const node = useRef<SVGSVGElement>(null)
   const size = useNodeSize({ node })
 
-  const candles = chunks[0]
-  const { ynorm } = useRenderContext({ candles, resolution })
+  const refCandles = chunks[0]
+  const flatCandles = flatten(chunks)
+  const { ynorm } = useRenderContext({ candles: refCandles, resolution })
 
   const transform = useScroll({ node })
   const transformRef = useRef(transform)
@@ -36,29 +38,36 @@ export default ({ symbol, chunks, chunkSize, delta, resolution }: Props) => {
     y2 = ynorm(delta.close)
   }
 
+  // every other chunk cooridinate is relative to the first chunk
+  const refContext = useRenderContext({ candles: refCandles, resolution })
+
   return (
     <div className="w-full h-full relative flex">
       <div className="relative flex-1 flex flex-col">
         <svg className="w-full h-full" ref={node}>
           <ChartLines node={node} />
-          <CandleChunk
-            symbol={symbol}
-            candles={chunks[0]}
-            chunkSize={chunkSize}
-            delta={delta}
-            resolution={resolution}
-            size={{ width: size.width, height: size.height }}
-          />
+          {chunks.map((candles, i) => (
+            <CandleChunk
+              key={i}
+              refContext={refContext}
+              symbol={symbol}
+              candles={candles}
+              chunkSize={chunkSize}
+              delta={delta}
+              resolution={resolution}
+              size={{ width: size.width, height: size.height }}
+            />
+          ))}
         </svg>
         <TimeAxis
-          candles={candles}
+          candles={refCandles}
           resolution={resolution}
           transform={transform}
           marks={[x]}
         />
       </div>
       <PriceAxis
-        candles={candles}
+        candles={refCandles}
         resolution={resolution}
         transform={transform}
         marks={[y, y2]}

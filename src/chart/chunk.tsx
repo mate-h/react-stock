@@ -3,11 +3,13 @@ import { chunk, flatten, max, min } from 'lodash'
 import { useMemo } from 'react'
 import { classes } from '../classes'
 import { formatInterval, p } from './lib'
-import { useRenderContext } from './render-context'
+import { RenderContext, useRenderContext } from './render-context'
+import { Transform } from './scroll'
 import { transformAtom, viewModeAtom } from './store'
 import { CandleDatum, CandleDelta, CandleResolution } from './types'
 
 type ChunkProps = {
+  refContext: RenderContext
   symbol: string
   candles: CandleDatum[]
   delta?: CandleDelta
@@ -17,6 +19,7 @@ type ChunkProps = {
 }
 
 export const CandleChunk = ({
+  refContext,
   symbol,
   candles,
   resolution,
@@ -33,9 +36,11 @@ export const CandleChunk = ({
     lastCandle,
     xmin,
     xmax,
+    ymax,
+    ymin,
     lineGroups,
     data,
-  } = useRenderContext({ candles, resolution })
+  } = useRenderContext({ candles, resolution, refContext })
 
   function bar(d: CandleDatum, i: number) {
     const pad = 1 / 5 / len
@@ -128,9 +133,37 @@ export const CandleChunk = ({
     return `translate(${transform.x} ${transform.y}) scale(${transform.scale})`
   }, [transform])
 
+  const originX = firstCandle ? xnorm(firstCandle) * transform.scale : 0
+  const renderText = () => (
+    <text
+      x={p(originX)}
+      y={ymax ? p(ynorm(ymax) * transform.scale) : '0'}
+      className="text-xs fill-white"
+      transform={`scale(${1 / transform.scale})`}
+    >
+      <tspan x={p(originX)} dy="1.2em">
+        {symbol}&nbsp;&middot;&nbsp;{resolution}
+      </tspan>
+      <tspan x={p(originX)} dy="1.2em">
+        {formatInterval(new Date(xmin), new Date(xmax))}
+      </tspan>
+      {firstCandle && lastCandle && (
+        <tspan x={p(originX)} dy="1.2em">
+          {`$${firstCandle.open.toFixed(2)} - $${lastCandle.close.toFixed(2)}`}
+        </tspan>
+      )}
+    </text>
+  )
+
   return (
     <g transform={stringTransform}>
-      <rect className="fill-well" x="0" y="0" width="100%" height="100%" />
+      <rect
+        className="fill-well"
+        x={firstCandle ? p(xnorm(firstCandle)) : '0'}
+        y={ymax ? p(ynorm(ymax)) : '0'}
+        width="100%"
+        height={p(ynorm(ymin) - ynorm(ymax))}
+      />
       {['candles', 'both'].includes(viewMode) && <>{data.map(bar)}</>}
 
       {['lines', 'both'].includes(viewMode) && (
@@ -141,32 +174,7 @@ export const CandleChunk = ({
       )}
 
       {/* description text node */}
-      <text
-        x={p(0)}
-        y={'1rem'}
-        className="text-xs fill-white"
-        transform={`scale(${1 / transform.scale})`}
-      >
-        {symbol}&nbsp;&middot;&nbsp;{resolution}
-      </text>
-      <text
-        x={p(0)}
-        y={'2rem'}
-        className="text-xs fill-white"
-        transform={`scale(${1 / transform.scale})`}
-      >
-        {formatInterval(new Date(xmin), new Date(xmax))}
-      </text>
-      {firstCandle && lastCandle && (
-        <text
-          x={p(0)}
-          y={'3rem'}
-          className="text-xs fill-white"
-          transform={`scale(${1 / transform.scale})`}
-        >
-          {`$${firstCandle.open.toFixed(2)} - $${lastCandle.close.toFixed(2)}`}
-        </text>
-      )}
+      {/* {renderText()} */}
     </g>
   )
 }

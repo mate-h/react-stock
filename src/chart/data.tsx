@@ -32,7 +32,7 @@ export function CandleData(props: Props) {
   if (candleType === 'crypto') {
     symbol = `${market}:${search}`.toUpperCase()
   }
-  let prevSymbolRef = useRef("")
+  let prevSymbolRef = useRef('')
 
   const [loaded, setLoaded] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -125,8 +125,11 @@ export function CandleData(props: Props) {
   function addNewCandle(c: CandleDatum) {
     const dc = candlesRef.current
     // push into the data array and shift according to chunk size
-    dc[0].push(c)
-    dc[0].shift()
+    let el = c
+    for (let i = 0; i < dc.length; i++) {
+      dc[i].push(el)
+      el = dc[i].shift()!
+    }
     setChunks(dc)
     candlesRef.current = dc
   }
@@ -161,6 +164,8 @@ export function CandleData(props: Props) {
     if (!loaded) {
       setLoaded(true)
       load({ resolution, index: 0 })
+      load({ resolution, index: 1 })
+      load({ resolution, index: 2 })
     }
     if (!subscribed) {
       subscribe()
