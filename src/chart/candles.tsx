@@ -1,5 +1,5 @@
-import { flatten } from 'lodash'
-import { RefObject, useEffect, useRef, useState } from 'react'
+import { flatten, set } from 'lodash'
+import { useEffect, useRef } from 'react'
 import { useTransformedPointer } from '../pointer'
 import { PriceAxis } from './axes/price'
 import { TimeAxis } from './axes/time'
@@ -26,7 +26,12 @@ export default ({ symbol, chunks, chunkSize, delta, resolution }: Props) => {
   const flatCandles = flatten(chunks)
   const { ynorm } = useRenderContext({ candles: refCandles, resolution })
 
-  const transform = useScroll({ node })
+  const transform = useScroll({
+    node,
+    adapter: (t) => {
+      return set(t, 'y', 0)
+    },
+  })
   const transformRef = useRef(transform)
   useEffect(() => {
     transformRef.current = transform

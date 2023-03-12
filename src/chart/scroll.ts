@@ -8,10 +8,16 @@ export type Transform = {
   scale: number
 }
 
+const defaultAdapter = (newTransform: Transform): Transform => {
+  return newTransform
+}
+
 export function useScroll({
   node,
+  adapter = defaultAdapter,
 }: {
   node: RefObject<HTMLElement | SVGElement>
+  adapter?: (transform: Transform) => Transform
 }) {
   const [transform, setTransform] = useAtom(transformAtom)
   const transformRef = useRef(transform)
@@ -25,6 +31,7 @@ export function useScroll({
   const touchDecelerateRef = useRef(false)
   const prevPointerRef = useRef({ x: 0, y: 0 })
   const velocityRef = useRef({ x: 0, y: 0 })
+
   useEffect(() => {
     const el = node.current
     if (!el) return
@@ -43,11 +50,11 @@ export function useScroll({
           const minScale = 0.1
           scale = Math.max(minScale, Math.min(maxScale, scale))
           const origin = originRef.current
-          const newTranform = {
+          const newTranform = adapter({
             x: prev.x - (origin.x - prev.x) * (scale / prev.scale - 1),
             y: prev.y - (origin.y - prev.y) * (scale / prev.scale - 1),
             scale,
-          }
+          })
           transformRef.current = newTranform
           return newTranform
         })
@@ -57,7 +64,7 @@ export function useScroll({
       setTransform((prev) => {
         const tx = prev.x - dx
         const ty = prev.y - dy
-        const newTranform = { x: tx, y: ty, scale: prev.scale }
+        const newTranform = adapter({ x: tx, y: ty, scale: prev.scale })
         transformRef.current = newTranform
         return newTranform
       })
@@ -94,7 +101,7 @@ export function useScroll({
         setTransform((prev) => {
           const nx = prev.x + dx
           const ny = prev.y + dy
-          const newTranform = { x: nx, y: ny, scale: prev.scale }
+          const newTranform = adapter({ x: nx, y: ny, scale: prev.scale })
           transformRef.current = newTranform
           return newTranform
         })
@@ -194,7 +201,7 @@ export function useScroll({
         setTransform((prev) => {
           const nx = o.x - delta.x
           const ny = o.y - delta.y
-          const newTranform = { x: -nx, y: -ny, scale: prev.scale }
+          const newTranform = adapter({ x: -nx, y: -ny, scale: prev.scale })
           transformRef.current = newTranform
           return newTranform
         })
@@ -245,7 +252,7 @@ export function useScroll({
       const nx = transformRef.current.x + dx
       const ny = transformRef.current.y + dy
       setTransform((prev) => {
-        const newTranform = { x: nx, y: ny, scale: prev.scale }
+        const newTranform = adapter({ x: nx, y: ny, scale: prev.scale })
         transformRef.current = newTranform
         return newTranform
       })
