@@ -1,27 +1,26 @@
 import { useAtom } from 'jotai'
-import { chunk, flatten, max, min } from 'lodash'
 import { useMemo } from 'react'
 import { classes } from '../classes'
 import { formatInterval, p } from './lib'
-import { RenderContext, useRenderContext } from './render-context'
-import { Transform } from './scroll'
+import { RenderContext } from './render-context'
 import { transformAtom, viewModeAtom } from './store'
 import { CandleDatum, CandleDelta, CandleResolution } from './types'
 
 type ChunkProps = {
-  renderContext: RenderContext
   symbol: string
   candles: CandleDatum[]
   delta?: CandleDelta
   resolution: CandleResolution
+  renderContext: RenderContext
   chunkSize: number
   size: { width: number; height: number }
 }
 
 export const CandleChunk = ({
-  renderContext,
+  candles,
   symbol,
   resolution,
+  renderContext,
   size,
 }: ChunkProps) => {
   const [transform] = useAtom(transformAtom)
@@ -38,8 +37,13 @@ export const CandleChunk = ({
     ymax,
     ymin,
     lineGroups,
-    data,
   } = renderContext
+
+  // const {
+  //   ymin,
+  //   ymax,
+  //   ynorm
+  // } = useSmoothAxis({})
 
   function bar(d: CandleDatum, i: number) {
     const pad = 1 / 5 / len
@@ -163,7 +167,7 @@ export const CandleChunk = ({
         width="100%"
         height={p(ynorm(ymin) - ynorm(ymax))}
       />
-      {['candles', 'both'].includes(viewMode) && <>{data.map(bar)}</>}
+      {['candles', 'both'].includes(viewMode) && <>{candles.map(bar)}</>}
 
       {['lines', 'both'].includes(viewMode) && (
         <>

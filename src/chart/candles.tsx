@@ -1,10 +1,8 @@
-import { flatten, max, min, set } from 'lodash'
 import { useEffect, useRef } from 'react'
 import { useTransformedPointer } from '../pointer'
 import { PriceAxis } from './axes/price'
 import { TimeAxis } from './axes/time'
 import { CandleChunk } from './chunk'
-import { norm } from './lib'
 import { ChartLines } from './lines'
 import { useNodeSize } from './node-size'
 import { useRenderContext } from './render-context'
@@ -45,8 +43,6 @@ export default ({ symbol, chunks, chunkSize, delta, resolution }: Props) => {
     size,
   })
 
-  const flatCandles = flatten(chunks)
-
   let y2
   if (delta) {
     y2 = renderContext.ynorm(delta.close)
@@ -66,7 +62,7 @@ export default ({ symbol, chunks, chunkSize, delta, resolution }: Props) => {
               chunkSize={chunkSize}
               delta={delta}
               resolution={resolution}
-              size={{ width: size.width, height: size.height }}
+              size={size}
             />
           ))}
         </svg>

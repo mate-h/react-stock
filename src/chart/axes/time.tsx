@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { RenderContext, useRenderContext } from '../render-context'
+import { RenderContext } from '../render-context'
 import { Transform } from '../scroll'
 import { CandleResolution } from '../types'
 import { AxesText } from './text'

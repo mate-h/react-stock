@@ -1,4 +1,5 @@
 import { chunk, flatten, max, min } from 'lodash'
+import { useEffect, useState } from 'react'
 import { getUnit, norm } from './lib'
 import { Transform } from './scroll'
 import { CandleDatum, CandleResolution } from './types'
@@ -15,6 +16,16 @@ export type RenderContext = {
   xmin: number
   xmax: number
   lineGroups: CandleDatum[][]
+}
+
+let target = {
+  max: 0,
+  min: 0,
+}
+let current = {
+  ymax: 0,
+  ymin: 0,
+  ynorm: (y: number) => 0,
 }
 
 /**
@@ -44,24 +55,49 @@ export function useRenderContext({
   // size.width is the width of the chart in pixels
   // transform.x is the translation of the chart in pixels
   // scale is the zoom level of the chart
-
-  let px = Math.floor((transform.x / size.width) * flatCandles.length)
-  px = Math.max(0, px)
-  px = Math.min(flatCandles.length - chunkSize, px)
-  const candles = flatCandles.slice(px, px + chunkSize)
-
-  console.log('candles', px, px + chunkSize, candles.length)
+  const px = transform.x / size.width
+  const scale = transform.scale
+  const total = flatCandles.length
+  const candles = flatCandles.slice(
+    Math.floor(total * px),
+    Math.floor(total * px) + Math.floor(chunkSize / scale)
+  )
 
   const len = candles.length
   const data = candles
   const lastCandle = data[data.length - 1]
   const firstCandle = data[0]
   const yflat = flatten(data.map((d) => [d.open, d.close, d.high, d.low]))
-  const ymax = max(yflat) || 0
-  const ymin = min(yflat) || 0
-  const ynorm = (y: number) => {
-    return norm(y, ymin, ymax)
+  
+  const tymax = max(yflat) || 0
+  const tymin = min(yflat) || 0
+  const tynorm = (y: number) => {
+    return norm(y, tymin, tymax)
   }
+  target.max = tymax
+  target.min = tymin
+
+  // console.log('target', target)
+  let [,invalidate] = useState(0)
+  useEffect(() => {
+    let cancel;
+    let frame = () => {
+      const dy = target.max - current.ymax
+      const dx = target.min - current.ymin
+      current.ymax += dy * 0.1
+      current.ymin += dx * 0.1
+      if (Math.abs(dy) > 0.001 && Math.abs(dx) > 0.001) {
+        invalidate((i) => i + 1)
+      }
+      current.ynorm = (y: number) => {
+        return norm(y, current.ymin, current.ymax)
+      }
+      cancel = requestAnimationFrame(frame)
+    };
+    cancel = requestAnimationFrame(frame)
+    return () => cancelAnimationFrame(cancel)
+  }, [])
+
   const selectx = (d: CandleDatum) => d.date.getTime()
   const xmin = min(data.map((d) => d.date.getTime())) || 0
   const xmax = max(data.map((d) => d.date.getTime())) || 0
@@ -78,6 +114,7 @@ export function useRenderContext({
     2
   )
 
+  const { ymax, ymin, ynorm } = current
   return {
     len,
     data,
