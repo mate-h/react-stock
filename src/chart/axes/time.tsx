@@ -1,24 +1,24 @@
 import { useMemo } from 'react'
-import { useRenderContext } from '../render-context'
+import { RenderContext, useRenderContext } from '../render-context'
 import { Transform } from '../scroll'
-import { CandleDatum, CandleResolution } from '../types'
+import { CandleResolution } from '../types'
 import { AxesText } from './text'
 
 type Props = {
-  candles: CandleDatum[]
   resolution: CandleResolution
   marks: number[]
   transform: Transform
   snap?: boolean
+  renderContext: RenderContext
 }
 export const TimeAxis = ({
   transform,
-  candles,
+  renderContext,
   resolution,
   marks,
   snap = true,
 }: Props) => {
-  const { len, data } = useRenderContext({ candles, resolution })
+  const { data, len } = renderContext
   function snapValue(x: number) {
     if (!snap || len === 0) return x
     return Math.min(

@@ -1,17 +1,15 @@
 import { useMemo } from 'react'
-import { useRenderContext } from '../render-context'
+import { RenderContext } from '../render-context'
 import { Transform } from '../scroll'
-import { CandleDatum, CandleResolution } from '../types'
 import { AxesText } from './text'
 
 type Props = {
-  candles: CandleDatum[]
-  resolution: CandleResolution
+  renderContext: RenderContext
   marks: number[]
   transform: Transform
 }
-export const PriceAxis = ({ candles, resolution, marks, transform }: Props) => {
-  const { ymin, ymax } = useRenderContext({ candles, resolution })
+export const PriceAxis = ({ renderContext, marks, transform }: Props) => {
+  const { ymin, ymax } = renderContext
   const range = ymax - ymin
   const currentMarks = useMemo(
     () =>

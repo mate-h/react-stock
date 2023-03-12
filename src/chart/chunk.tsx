@@ -9,7 +9,7 @@ import { transformAtom, viewModeAtom } from './store'
 import { CandleDatum, CandleDelta, CandleResolution } from './types'
 
 type ChunkProps = {
-  refContext: RenderContext
+  renderContext: RenderContext
   symbol: string
   candles: CandleDatum[]
   delta?: CandleDelta
@@ -19,9 +19,8 @@ type ChunkProps = {
 }
 
 export const CandleChunk = ({
-  refContext,
+  renderContext,
   symbol,
-  candles,
   resolution,
   size,
 }: ChunkProps) => {
@@ -40,7 +39,7 @@ export const CandleChunk = ({
     ymin,
     lineGroups,
     data,
-  } = useRenderContext({ candles, resolution, refContext })
+  } = renderContext
 
   function bar(d: CandleDatum, i: number) {
     const pad = 1 / 5 / len

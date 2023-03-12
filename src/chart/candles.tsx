@@ -1,9 +1,10 @@
-import { flatten, set } from 'lodash'
+import { flatten, max, min, set } from 'lodash'
 import { useEffect, useRef } from 'react'
 import { useTransformedPointer } from '../pointer'
 import { PriceAxis } from './axes/price'
 import { TimeAxis } from './axes/time'
 import { CandleChunk } from './chunk'
+import { norm } from './lib'
 import { ChartLines } from './lines'
 import { useNodeSize } from './node-size'
 import { useRenderContext } from './render-context'
@@ -22,14 +23,11 @@ export default ({ symbol, chunks, chunkSize, delta, resolution }: Props) => {
   const node = useRef<SVGSVGElement>(null)
   const size = useNodeSize({ node })
 
-  const refCandles = chunks[0]
-  const flatCandles = flatten(chunks)
-  const { ynorm } = useRenderContext({ candles: refCandles, resolution })
-
   const transform = useScroll({
     node,
     adapter: (t) => {
-      return set(t, 'y', 0)
+      t.y = 0
+      return t
     },
   })
   const transformRef = useRef(transform)
@@ -38,13 +36,21 @@ export default ({ symbol, chunks, chunkSize, delta, resolution }: Props) => {
   }, [transform])
   let { x, y } = useTransformedPointer({ node, transformRef })
 
+  // every other chunk cooridinate is relative to the first chunk
+  const renderContext = useRenderContext({
+    chunks,
+    resolution,
+    transform,
+    chunkSize,
+    size,
+  })
+
+  const flatCandles = flatten(chunks)
+
   let y2
   if (delta) {
-    y2 = ynorm(delta.close)
+    y2 = renderContext.ynorm(delta.close)
   }
-
-  // every other chunk cooridinate is relative to the first chunk
-  const refContext = useRenderContext({ candles: refCandles, resolution })
 
   return (
     <div className="w-full h-full relative flex">
@@ -54,7 +60,7 @@ export default ({ symbol, chunks, chunkSize, delta, resolution }: Props) => {
           {chunks.map((candles, i) => (
             <CandleChunk
               key={i}
-              refContext={refContext}
+              renderContext={renderContext}
               symbol={symbol}
               candles={candles}
               chunkSize={chunkSize}
@@ -65,15 +71,14 @@ export default ({ symbol, chunks, chunkSize, delta, resolution }: Props) => {
           ))}
         </svg>
         <TimeAxis
-          candles={refCandles}
+          renderContext={renderContext}
           resolution={resolution}
           transform={transform}
           marks={[x]}
         />
       </div>
       <PriceAxis
-        candles={refCandles}
-        resolution={resolution}
+        renderContext={renderContext}
         transform={transform}
         marks={[y, y2]}
       />
