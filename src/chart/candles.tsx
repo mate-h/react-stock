@@ -24,10 +24,6 @@ export default ({ symbol, chunks, chunkSize, delta, resolution }: Props) => {
 
   const transform = useScroll({
     node,
-    adapter: (t) => {
-      t.y = 0
-      return t
-    },
   })
   const transformRef = useRef(transform)
   useEffect(() => {
@@ -43,8 +39,17 @@ export default ({ symbol, chunks, chunkSize, delta, resolution }: Props) => {
     chunkSize,
     size,
   })
-  const { firstCandle, lastCandle, xmin, xmax, ymin, ymax, xnorm, ynorm } =
-    renderContext
+  const {
+    firstCandle,
+    lastCandle,
+    xmin,
+    xmax,
+    ymin,
+    ymax,
+    xnorm,
+    ynorm,
+    xnormv,
+  } = renderContext
 
   let y2
   if (delta) {
@@ -52,16 +57,16 @@ export default ({ symbol, chunks, chunkSize, delta, resolution }: Props) => {
   }
 
   const stringTransform = useMemo(() => {
-    return `translate(${transform.x} ${transform.y}) scale(${transform.scale})`
+    return `translate(${transform.x} 0) scale(${transform.scale} 1)`
   }, [transform])
 
-  const originX = firstCandle ? xnorm(firstCandle) * transform.scale : 0
+  const originX = xmin ? xnormv(xmin) * transform.scale : 0
   const renderText = () => (
     <text
       x={p(originX)}
       y={ymax ? p(ynorm(ymax) * transform.scale) : '0'}
       className="text-xs fill-white"
-      transform={`scale(${1 / transform.scale})`}
+      transform={`scale(${1 / transform.scale} 1)`}
     >
       <tspan x={p(originX)} dy="1.2em">
         {symbol}&nbsp;&middot;&nbsp;{resolution}
@@ -81,7 +86,7 @@ export default ({ symbol, chunks, chunkSize, delta, resolution }: Props) => {
       className="stroke-divider"
       fill="none"
       strokeWidth={1 / transform.scale}
-      x={firstCandle ? p(xnorm(firstCandle)) : '0'}
+      x={xmin ? p(xnormv(xmin)) : '0'}
       y={ymax ? p(ynorm(ymax)) : '0'}
       width="100%"
       height={p(ynorm(ymin) - ynorm(ymax))}
