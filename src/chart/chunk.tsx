@@ -1,7 +1,6 @@
 import { useAtom } from 'jotai'
-import { useMemo } from 'react'
 import { classes } from '../classes'
-import { formatInterval, p } from './lib'
+import { p } from './lib'
 import { RenderContext } from './render-context'
 import { transformAtom, viewModeAtom } from './store'
 import { CandleDatum, CandleDelta, CandleResolution } from './types'
@@ -16,34 +15,11 @@ type ChunkProps = {
   size: { width: number; height: number }
 }
 
-export const CandleChunk = ({
-  candles,
-  symbol,
-  resolution,
-  renderContext,
-  size,
-}: ChunkProps) => {
+export const CandleChunk = ({ candles, renderContext, size }: ChunkProps) => {
   const [transform] = useAtom(transformAtom)
   const [viewMode] = useAtom(viewModeAtom)
 
-  const {
-    len,
-    xnorm,
-    ynorm,
-    firstCandle,
-    lastCandle,
-    xmin,
-    xmax,
-    ymax,
-    ymin,
-    lineGroups,
-  } = renderContext
-
-  // const {
-  //   ymin,
-  //   ymax,
-  //   ynorm
-  // } = useSmoothAxis({})
+  const { len, xnorm, ynorm, lineGroups } = renderContext
 
   function bar(d: CandleDatum, i: number) {
     const pad = 1 / 5 / len
@@ -132,41 +108,8 @@ export const CandleChunk = ({
     )
   }
 
-  const stringTransform = useMemo(() => {
-    return `translate(${transform.x} ${transform.y}) scale(${transform.scale})`
-  }, [transform])
-
-  const originX = firstCandle ? xnorm(firstCandle) * transform.scale : 0
-  const renderText = () => (
-    <text
-      x={p(originX)}
-      y={ymax ? p(ynorm(ymax) * transform.scale) : '0'}
-      className="text-xs fill-white"
-      transform={`scale(${1 / transform.scale})`}
-    >
-      <tspan x={p(originX)} dy="1.2em">
-        {symbol}&nbsp;&middot;&nbsp;{resolution}
-      </tspan>
-      <tspan x={p(originX)} dy="1.2em">
-        {formatInterval(new Date(xmin), new Date(xmax))}
-      </tspan>
-      {firstCandle && lastCandle && (
-        <tspan x={p(originX)} dy="1.2em">
-          {`$${firstCandle.open.toFixed(2)} - $${lastCandle.close.toFixed(2)}`}
-        </tspan>
-      )}
-    </text>
-  )
-
   return (
-    <g transform={stringTransform}>
-      <rect
-        className="fill-well"
-        x={firstCandle ? p(xnorm(firstCandle)) : '0'}
-        y={ymax ? p(ynorm(ymax)) : '0'}
-        width="100%"
-        height={p(ynorm(ymin) - ynorm(ymax))}
-      />
+    <>
       {['candles', 'both'].includes(viewMode) && <>{candles.map(bar)}</>}
 
       {['lines', 'both'].includes(viewMode) && (
@@ -175,9 +118,6 @@ export const CandleChunk = ({
           {lineGroups.map(line)}
         </>
       )}
-
-      {/* description text node */}
-      {/* {renderText()} */}
-    </g>
+    </>
   )
 }

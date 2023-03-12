@@ -50,25 +50,24 @@ export function useRenderContext({
   const flatCandles = flatten(chunks)
     .filter((x) => x)
     .sort((a, b) => b.date.getTime() - a.date.getTime())
-
   // chunkSize is 60
   // size.width is the width of the chart in pixels
   // transform.x is the translation of the chart in pixels
   // scale is the zoom level of the chart
-  const px = transform.x / size.width
   const scale = transform.scale
   const total = flatCandles.length
-  const candles = flatCandles.slice(
-    Math.floor(total * px),
-    Math.floor(total * px) + Math.floor(chunkSize / scale)
-  )
+  const chunkWidth = chunkSize / scale
+  let px = (transform.x / size.width) * total
+  px = Math.max(0, px)
+  px = Math.min(total - chunkWidth, px)
+  const candles = flatCandles.slice(px, px + chunkWidth).reverse()
 
   const len = candles.length
   const data = candles
   const lastCandle = data[data.length - 1]
   const firstCandle = data[0]
   const yflat = flatten(data.map((d) => [d.open, d.close, d.high, d.low]))
-  
+
   const tymax = max(yflat) || 0
   const tymin = min(yflat) || 0
   const tynorm = (y: number) => {
@@ -78,9 +77,9 @@ export function useRenderContext({
   target.min = tymin
 
   // console.log('target', target)
-  let [,invalidate] = useState(0)
+  let [, invalidate] = useState(0)
   useEffect(() => {
-    let cancel;
+    let cancel
     let frame = () => {
       const dy = target.max - current.ymax
       const dx = target.min - current.ymin
@@ -93,14 +92,14 @@ export function useRenderContext({
         return norm(y, current.ymin, current.ymax)
       }
       cancel = requestAnimationFrame(frame)
-    };
+    }
     cancel = requestAnimationFrame(frame)
     return () => cancelAnimationFrame(cancel)
   }, [])
 
   const selectx = (d: CandleDatum) => d.date.getTime()
-  const xmin = min(data.map((d) => d.date.getTime())) || 0
-  const xmax = max(data.map((d) => d.date.getTime())) || 0
+  const xmin = min(candles.map((d) => d.date.getTime())) || 0
+  const xmax = max(candles.map((d) => d.date.getTime())) || 0
   const xnorm = (d: CandleDatum) => {
     const timeUnit = getUnit(resolution)
     return 1 - norm(selectx(d), xmin, xmax + timeUnit)
