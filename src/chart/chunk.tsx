@@ -7,7 +7,6 @@ import { CandleDatum, CandleDelta, CandleResolution } from './types'
 
 type ChunkProps = {
   symbol: string
-  candles: CandleDatum[]
   delta?: CandleDelta
   resolution: CandleResolution
   renderContext: RenderContext
@@ -15,11 +14,11 @@ type ChunkProps = {
   size: { width: number; height: number }
 }
 
-export const CandleChunk = ({ candles, renderContext, size }: ChunkProps) => {
+export const CandleChunk = ({ renderContext, size }: ChunkProps) => {
   const [transform] = useAtom(transformAtom)
   const [viewMode] = useAtom(viewModeAtom)
 
-  const { len, xnorm, ynorm, lineGroups } = renderContext
+  const { data, len, xnorm, ynorm, lineGroups } = renderContext
 
   function bar(d: CandleDatum, i: number) {
     const pad = 1 / 5 / len
@@ -110,7 +109,7 @@ export const CandleChunk = ({ candles, renderContext, size }: ChunkProps) => {
 
   return (
     <>
-      {['candles', 'both'].includes(viewMode) && <>{candles.map(bar)}</>}
+      {['candles', 'both'].includes(viewMode) && <>{data.map(bar)}</>}
 
       {['lines', 'both'].includes(viewMode) && (
         <>

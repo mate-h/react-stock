@@ -64,7 +64,7 @@ export default ({ symbol, chunks, chunkSize, delta, resolution }: Props) => {
   const renderText = () => (
     <text
       x={p(originX)}
-      y={ymax ? p(ynorm(ymax) * transform.scale) : '0'}
+      y={ymin ? p(ynorm(ymin) * transform.scale) : '0'}
       className="text-xs fill-white"
       transform={`scale(${1 / transform.scale} 1)`}
     >
@@ -83,13 +83,13 @@ export default ({ symbol, chunks, chunkSize, delta, resolution }: Props) => {
   )
   const DebugRect = () => (
     <rect
-      className="stroke-divider"
+      className="stroke-red-500"
       fill="none"
       strokeWidth={1 / transform.scale}
       x={xmin ? p(xnormv(xmin)) : '0'}
-      y={ymax ? p(ynorm(ymax)) : '0'}
+      y={ymin ? p(ynorm(ymin)) : '0'}
       width="100%"
-      height={p(ynorm(ymin) - ynorm(ymax))}
+      height={p(ynorm(ymax) - ynorm(ymin))}
     />
   )
 
@@ -99,18 +99,15 @@ export default ({ symbol, chunks, chunkSize, delta, resolution }: Props) => {
         <svg className="w-full h-full" ref={node}>
           <ChartLines node={node} />
           <g transform={stringTransform}>
-            {chunks.map((candles, i) => (
-              <CandleChunk
-                key={i}
-                renderContext={renderContext}
-                symbol={symbol}
-                candles={candles}
-                chunkSize={chunkSize}
-                delta={delta}
-                resolution={resolution}
-                size={size}
-              />
-            ))}
+            <CandleChunk
+              renderContext={renderContext}
+              symbol={symbol}
+              chunkSize={chunkSize}
+              delta={delta}
+              resolution={resolution}
+              size={size}
+            />
+
             {renderText()}
             <DebugRect />
           </g>
