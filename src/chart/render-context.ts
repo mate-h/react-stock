@@ -5,13 +5,12 @@ import { Transform } from './scroll'
 import { CandleDatum, CandleResolution } from './types'
 
 export type RenderContext = {
-  len: number
+  chunkWidth: number
   data: CandleDatum[]
   lastCandle: CandleDatum
   firstCandle: CandleDatum
   ynorm: (y: number) => number
-  xnorm: (d: CandleDatum) => number
-  xnormv: (x: number) => number
+  xnorm: (x: number) => number
   ymax: number
   ymin: number
   xmin: number
@@ -31,8 +30,7 @@ let current = {
   xmax: 0,
   xmin: 0,
   ynorm: (y: number) => 0,
-  xnorm: (d: CandleDatum) => 0,
-  xnormv: (x: number) => 0,
+  xnorm: (x: number) => 0,
 }
 
 /**
@@ -59,15 +57,15 @@ export function useRenderContext({
     .sort((a, b) => b.date.getTime() - a.date.getTime())
 
   const scale = transform.scale
-  const len = data.length
   const chunkWidth = chunkSize / scale
   const px = transform.x / size.width
-  const lastCandle = data[data.length - 1]
+  const maxIndex = data.length - 1
+  const lastCandle = data[maxIndex]
   const firstCandle = data[0]
 
   const slice = {
-    from: clamp(Math.floor(px * len), 0, len - 1 - chunkWidth),
-    to: clamp(Math.floor(px * len + chunkWidth), chunkWidth, len - 1),
+    from: clamp(Math.floor(px * data.length), 0, maxIndex - chunkWidth),
+    to: clamp(Math.floor(px * data.length + chunkWidth), chunkWidth, maxIndex),
   }
   const yflat = flatten(
     data
@@ -83,13 +81,6 @@ export function useRenderContext({
     ? firstCandle.date.getTime() + px * getUnit(resolution) * chunkWidth
     : 0
   target.xmin = target.xmax - getUnit(resolution) * chunkWidth
-
-  console.log('target', {
-    ymax: target.ymax,
-    ymin: target.ymin,
-    xmax: new Date(target.xmax),
-    xmin: new Date(target.xmin),
-  })
 
   // console.log('target', target)
   let [, invalidate] = useState(0)
@@ -115,10 +106,7 @@ export function useRenderContext({
       current.ynorm = (y: number) => {
         return 1 - norm(y, current.ymin, current.ymax)
       }
-      current.xnorm = (d: CandleDatum) => {
-        return norm(d.date.getTime(), current.xmin, current.xmax)
-      }
-      current.xnormv = (x: number) => {
+      current.xnorm = (x: number) => {
         return norm(x, current.xmin, current.xmax)
       }
       cancel = requestAnimationFrame(frame)
@@ -136,15 +124,14 @@ export function useRenderContext({
     2
   )
 
-  const { xmin, xmax, xnorm, xnormv, ymax, ymin, ynorm } = current
+  const { xmin, xmax, xnorm, ymax, ymin, ynorm } = current
   return {
-    len,
+    chunkWidth,
     data,
     lastCandle,
     firstCandle,
     ynorm,
     xnorm,
-    xnormv,
     ymax,
     ymin,
     xmin,

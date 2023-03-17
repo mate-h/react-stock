@@ -18,7 +18,8 @@ export const TimeAxis = ({
   marks,
   snap = true,
 }: Props) => {
-  const { data, len } = renderContext
+  const { data } = renderContext
+  const len = data.length
   function snapValue(x: number) {
     if (!snap || len === 0) return x
     return Math.min(

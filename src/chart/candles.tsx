@@ -39,28 +39,15 @@ export default ({ symbol, chunks, chunkSize, delta, resolution }: Props) => {
     chunkSize,
     size,
   })
-  const {
-    firstCandle,
-    lastCandle,
-    xmin,
-    xmax,
-    ymin,
-    ymax,
-    xnorm,
-    ynorm,
-    xnormv,
-  } = renderContext
+  const { firstCandle, lastCandle, xmin, xmax, ymin, ymax, ynorm, xnorm } =
+    renderContext
 
   let y2
   if (delta) {
     y2 = ynorm(delta.close)
   }
 
-  const stringTransform = useMemo(() => {
-    return `translate(${transform.x} 0) scale(${transform.scale} 1)`
-  }, [transform])
-
-  const originX = xmin ? xnormv(xmin) * transform.scale : 0
+  const originX = xmin ? xnorm(xmin) * transform.scale : 0
   const renderText = () => (
     <text
       x={p(originX)}
@@ -85,10 +72,10 @@ export default ({ symbol, chunks, chunkSize, delta, resolution }: Props) => {
     <rect
       className="stroke-red-500"
       fill="none"
-      strokeWidth={1 / transform.scale}
-      x={xmin ? p(xnormv(xmin)) : '0'}
+      strokeWidth={1}
+      x={xmax ? p(xnorm(xmax)) : '0'}
       y={ymin ? p(ynorm(ymin)) : '0'}
-      width="100%"
+      width={p(xnorm(xmin) - xnorm(xmax))}
       height={p(ynorm(ymax) - ynorm(ymin))}
     />
   )
@@ -98,19 +85,17 @@ export default ({ symbol, chunks, chunkSize, delta, resolution }: Props) => {
       <div className="relative flex-1 flex flex-col">
         <svg className="w-full h-full" ref={node}>
           <ChartLines node={node} />
-          <g transform={stringTransform}>
-            <CandleChunk
-              renderContext={renderContext}
-              symbol={symbol}
-              chunkSize={chunkSize}
-              delta={delta}
-              resolution={resolution}
-              size={size}
-            />
+          <CandleChunk
+            renderContext={renderContext}
+            symbol={symbol}
+            chunkSize={chunkSize}
+            delta={delta}
+            resolution={resolution}
+            size={size}
+          />
 
-            {renderText()}
-            <DebugRect />
-          </g>
+          {renderText()}
+          <DebugRect />
         </svg>
         <TimeAxis
           renderContext={renderContext}

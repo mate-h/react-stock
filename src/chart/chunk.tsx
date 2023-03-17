@@ -2,7 +2,7 @@ import { useAtom } from 'jotai'
 import { classes } from '../classes'
 import { p } from './lib'
 import { RenderContext } from './render-context'
-import { transformAtom, viewModeAtom } from './store'
+import { viewModeAtom } from './store'
 import { CandleDatum, CandleDelta, CandleResolution } from './types'
 
 type ChunkProps = {
@@ -15,26 +15,30 @@ type ChunkProps = {
 }
 
 export const CandleChunk = ({ renderContext, size }: ChunkProps) => {
-  const [transform] = useAtom(transformAtom)
   const [viewMode] = useAtom(viewModeAtom)
 
-  const { data, len, xnorm, ynorm, lineGroups } = renderContext
-
+  const { data, chunkWidth, xnorm, ynorm, lineGroups } = renderContext
+  function xcol(d: CandleDatum) {
+    return d.date.getTime()
+  }
   function bar(d: CandleDatum, i: number) {
-    const pad = 1 / 5 / len
-    const x = xnorm(d) + pad / 2
+    const pad = 1 / 5 / chunkWidth
+    const x = xnorm(xcol(d)) + pad / 2
     const y = ynorm(d.close)
     const y2 = ynorm(d.open)
     const y3 = Math.min(y, y2)
     const high = ynorm(d.high)
     const low = ynorm(d.low)
     const color = d.close < d.open ? 'red' : 'green'
-    const w = 1 / len - pad
+    const w = 1 / chunkWidth - pad
     const h = Math.abs(y - y2)
 
     const matches = false
     return (
       <g key={d.date.getTime()}>
+        <text x={p(x)} y={p(y3)} className="fill-label">
+          {i}
+        </text>
         <rect
           className={classes(
             color === 'green' && 'fill-green-500',
@@ -45,7 +49,7 @@ export const CandleChunk = ({ renderContext, size }: ChunkProps) => {
           y={p(y3)}
           width={p(w)}
           height={p(h)}
-          strokeWidth={1 / transform.scale}
+          strokeWidth={1}
         />
         <line
           className={classes(
@@ -56,15 +60,15 @@ export const CandleChunk = ({ renderContext, size }: ChunkProps) => {
           y1={p(high)}
           x2={p(x + w / 2)}
           y2={p(low)}
-          strokeWidth={1 / transform.scale}
+          strokeWidth={1}
         />
       </g>
     )
   }
   function line([d1, d2]: CandleDatum[]) {
-    const x1 = xnorm(d1)
+    const x1 = xnorm(xcol(d1))
     const y1 = ynorm(d1.open)
-    const x2 = xnorm(d2)
+    const x2 = xnorm(xcol(d2))
     const y2 = ynorm(d2.open)
     return (
       <line
@@ -74,7 +78,7 @@ export const CandleChunk = ({ renderContext, size }: ChunkProps) => {
         y1={p(y1)}
         x2={p(x2)}
         y2={p(y2)}
-        strokeWidth={1 / transform.scale}
+        strokeWidth={1}
       />
     )
   }
@@ -85,9 +89,9 @@ export const CandleChunk = ({ renderContext, size }: ChunkProps) => {
   function area([d1, d2]: CandleDatum[]) {
     const sx = size.width
     const sy = size.height
-    const u = 1 / len
-    const x1 = (xnorm(d1) + u / 2) * sx
-    const x2 = (xnorm(d2) + u / 2) * sx
+    const u = 1 / chunkWidth
+    const x1 = (xnorm(xcol(d1)) + u / 2) * sx
+    const x2 = (xnorm(xcol(d2)) + u / 2) * sx
     const y1h = ynorm(d1.high) * sy
     const y2h = ynorm(d2.high) * sy
     const y1l = ynorm(d1.low) * sy
