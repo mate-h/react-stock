@@ -15,7 +15,7 @@ export const TimeAxis = ({
   marks,
   snap = true,
 }: Props) => {
-  const { data } = renderContext
+  const { data, transform, size } = renderContext
   const len = data.length
   function snapValue(x: number) {
     if (!snap || len === 0) return x
@@ -27,7 +27,9 @@ export const TimeAxis = ({
   let snappedMarks = useMemo(() => marks.map((x) => snapValue(x)), [marks, len])
   function format(x: number) {
     if (len === 0) return ''
-    let index = Math.round(x * (len - 1))
+
+    const px = transform.x / size.width
+    let index = Math.round((1 - x + px) * (len - 1))
     if (index > len - 1) return ''
     if (index < 0) return ''
     const date = data[index].date
@@ -47,9 +49,7 @@ export const TimeAxis = ({
 
   return (
     <>
-      <div
-        className="px-1 relative w-full h-6 border-t border-divider bg-well"
-      >
+      <div className="px-1 relative w-full h-6 border-t border-divider bg-well">
         {snappedMarks.map((x, i) => (
           <AxesText key={i} horizontal x={x}>
             {format(x)}

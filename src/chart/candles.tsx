@@ -99,10 +99,7 @@ export default ({ symbol, chunks, chunkSize, delta, resolution }: Props) => {
           marks={[x]}
         />
       </div>
-      <PriceAxis
-        renderContext={renderContext}
-        marks={[y, y2]}
-      />
+      <PriceAxis renderContext={renderContext} marks={[y, y2]} />
     </div>
   )
 }

@@ -16,6 +16,11 @@ export type RenderContext = {
   xmin: number
   xmax: number
   lineGroups: CandleDatum[][]
+  chunks: CandleDatum[][]
+  chunkSize: number
+  resolution: CandleResolution
+  transform: Transform
+  size: { width: number; height: number }
 }
 
 let target = {
@@ -56,6 +61,8 @@ export function useRenderContext({
     .filter((x) => x)
     .sort((a, b) => b.date.getTime() - a.date.getTime())
 
+  // index 0 is the most recent candle (maximum x)
+
   const scale = transform.scale
   const chunkWidth = chunkSize / scale
   const px = transform.x / size.width
@@ -66,15 +73,17 @@ export function useRenderContext({
 
   const timeWidth = timeUnit * chunkWidth
 
-  target.xmin = firstCandle ? firstCandle.date.getTime() + timeUnit - px * timeWidth : 0
-  target.xmax = target.xmin - timeWidth
+  target.xmax = firstCandle
+    ? firstCandle.date.getTime() + timeUnit - px * timeWidth
+    : 0
+  target.xmin = target.xmax - timeWidth
+
+  const findIndex = (x: number) => data.findIndex((d) => d.date.getTime() < x)
 
   const slice = {
-    from: data.findIndex((d) => d.date.getTime() < target.xmin),
-    to: data.findIndex((d) => d.date.getTime() < target.xmax) + 1,
+    to: clamp(findIndex(target.xmin), chunkWidth, maxIndex),
+    from: clamp(findIndex(target.xmax) + 1, 0, maxIndex - chunkWidth),
   }
-  slice.from = clamp(slice.from, 0, maxIndex - 1)
-  slice.to = clamp(slice.to, 0, maxIndex - 1)
   const yflat = flatten(
     data
       .slice(slice.from, slice.to)
@@ -85,7 +94,6 @@ export function useRenderContext({
   target.ymax = tymax
   target.ymin = tymin
 
-  // console.log('target', target)
   let [, invalidate] = useState(0)
   useEffect(() => {
     let cancel
@@ -95,14 +103,15 @@ export function useRenderContext({
       let dy = target.ymax - current.ymax
       let dx = target.ymin - current.ymin
       d += Math.abs(dy) + Math.abs(dx)
-      const damp = 0.1
-      current.ymax += dy * damp
-      current.ymin += dx * damp
+      const dampX = .1
+      const dampY = 0.1
+      current.ymax += dy * dampY
+      current.ymin += dx * dampY
       dy = target.xmax - current.xmax
       dx = target.xmin - current.xmin
       d += Math.abs(dy) + Math.abs(dx)
-      current.xmax += dy * damp
-      current.xmin += dx * damp
+      current.xmax += dy * dampX
+      current.xmin += dx * dampX
       if (d > eps) {
         invalidate((i) => i + 1)
       }
@@ -110,7 +119,7 @@ export function useRenderContext({
         return norm(y, current.ymin, current.ymax)
       }
       current.xnorm = (x: number) => {
-        return norm(x, current.xmin, current.xmax)
+        return 1 - norm(x, current.xmin, current.xmax)
       }
       cancel = requestAnimationFrame(frame)
     }
@@ -140,5 +149,10 @@ export function useRenderContext({
     xmin,
     xmax,
     lineGroups,
+    chunks,
+    chunkSize,
+    resolution,
+    transform,
+    size,
   }
 }

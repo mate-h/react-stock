@@ -164,8 +164,6 @@ export function CandleData(props: Props) {
     if (!loaded) {
       setLoaded(true)
       load({ resolution, index: 0 })
-      load({ resolution, index: 1 })
-      load({ resolution, index: 2 })
     }
     if (!subscribed) {
       subscribe()
@@ -179,8 +177,8 @@ export function CandleData(props: Props) {
     if (symbol === undefined) return
     setLoaded(false)
     unsubscribe()
-    setChunks([[]])
-    candlesRef.current = [[]]
+    // setChunks([[]])
+    // candlesRef.current = [[]]
 
     load({ resolution, index: 0 })
     subscribe()
