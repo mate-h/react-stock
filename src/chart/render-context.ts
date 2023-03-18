@@ -61,12 +61,20 @@ export function useRenderContext({
   const px = transform.x / size.width
   const maxIndex = data.length - 1
   const lastCandle = data[maxIndex]
+  const timeUnit = getUnit(resolution)
   const firstCandle = data[0]
 
+  const timeWidth = timeUnit * chunkWidth
+
+  target.xmin = firstCandle ? firstCandle.date.getTime() + timeUnit - px * timeWidth : 0
+  target.xmax = target.xmin - timeWidth
+
   const slice = {
-    from: clamp(Math.floor(px * data.length), 0, maxIndex - chunkWidth),
-    to: clamp(Math.floor(px * data.length + chunkWidth), chunkWidth, maxIndex),
+    from: data.findIndex((d) => d.date.getTime() < target.xmin),
+    to: data.findIndex((d) => d.date.getTime() < target.xmax) + 1,
   }
+  slice.from = clamp(slice.from, 0, maxIndex - 1)
+  slice.to = clamp(slice.to, 0, maxIndex - 1)
   const yflat = flatten(
     data
       .slice(slice.from, slice.to)
@@ -76,11 +84,6 @@ export function useRenderContext({
   const tymin = min(yflat) || 0
   target.ymax = tymax
   target.ymin = tymin
-
-  target.xmax = firstCandle
-    ? firstCandle.date.getTime() + px * getUnit(resolution) * chunkWidth
-    : 0
-  target.xmin = target.xmax - getUnit(resolution) * chunkWidth
 
   // console.log('target', target)
   let [, invalidate] = useState(0)
@@ -92,7 +95,7 @@ export function useRenderContext({
       let dy = target.ymax - current.ymax
       let dx = target.ymin - current.ymin
       d += Math.abs(dy) + Math.abs(dx)
-      const damp = 1
+      const damp = 0.1
       current.ymax += dy * damp
       current.ymin += dx * damp
       dy = target.xmax - current.xmax
@@ -104,7 +107,7 @@ export function useRenderContext({
         invalidate((i) => i + 1)
       }
       current.ynorm = (y: number) => {
-        return 1 - norm(y, current.ymin, current.ymax)
+        return norm(y, current.ymin, current.ymax)
       }
       current.xnorm = (x: number) => {
         return norm(x, current.xmin, current.xmax)

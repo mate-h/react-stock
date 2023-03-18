@@ -2,7 +2,7 @@ import { p } from '../lib'
 
 export const AxesText = ({
   children,
-  scale,
+  scale = 1,
   x = 0,
   y = 0,
   horizontal = false,
@@ -11,7 +11,7 @@ export const AxesText = ({
   x?: number
   y?: number
   horizontal?: boolean
-  scale: number
+  scale?: number
 }) => {
   let classes = 'h-0 flex items-center text-xs'
   if (horizontal) {

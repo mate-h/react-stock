@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef } from 'react'
-import { useTransformedPointer } from '../pointer'
+import { useRef } from 'react'
+import { usePointer } from '../pointer'
 import { PriceAxis } from './axes/price'
 import { TimeAxis } from './axes/time'
 import { CandleChunk } from './chunk'
@@ -25,11 +25,7 @@ export default ({ symbol, chunks, chunkSize, delta, resolution }: Props) => {
   const transform = useScroll({
     node,
   })
-  const transformRef = useRef(transform)
-  useEffect(() => {
-    transformRef.current = transform
-  }, [transform])
-  let { x, y } = useTransformedPointer({ node, transformRef })
+  let { x, y } = usePointer({ node })
 
   // every other chunk cooridinate is relative to the first chunk
   const renderContext = useRenderContext({
@@ -95,18 +91,16 @@ export default ({ symbol, chunks, chunkSize, delta, resolution }: Props) => {
           />
 
           {renderText()}
-          <DebugRect />
+          {/* <DebugRect /> */}
         </svg>
         <TimeAxis
           renderContext={renderContext}
           resolution={resolution}
-          transform={transform}
           marks={[x]}
         />
       </div>
       <PriceAxis
         renderContext={renderContext}
-        transform={transform}
         marks={[y, y2]}
       />
     </div>

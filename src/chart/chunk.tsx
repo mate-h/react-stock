@@ -36,9 +36,9 @@ export const CandleChunk = ({ renderContext, size }: ChunkProps) => {
     const matches = false
     return (
       <g key={d.date.getTime()}>
-        <text x={p(x)} y={p(y3)} className="fill-label">
+        {/* <text x={p(x)} y={p(y3)} className="fill-label">
           {i}
-        </text>
+        </text> */}
         <rect
           className={classes(
             color === 'green' && 'fill-green-500',

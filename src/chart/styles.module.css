@@ -1,4 +1,4 @@
 .main {
   @apply absolute inset-0 !m-0;
-  @apply border border-divider rounded-2xl overflow-hidden;
+  @apply border border-divider rounded-2xl overflow-hidden max-h-lg;
 }

@@ -1,7 +1,19 @@
 import { CandleResolution } from './types'
 
-/** percent */
-export const p = (x: number) => (isNaN(x) ? '0%' : `${x * 100}%`)
+/** percent format */
+export const p = (x: number) => {
+  if (isNaN(x)) {
+    return '0%'
+  }
+  // if it's infinity, return 100%
+  if (x === Infinity) {
+    return '100%'
+  }
+  if (x === -Infinity) {
+    return '-100%'
+  }
+  return `${x * 100}%`
+}
 
 /** Normalize a value between a min and max */
 export const norm = (x: number, min: number, max: number) => {
@@ -21,7 +33,11 @@ export function formatInterval(from: Date, to: Date) {
     hour: 'numeric',
     minute: 'numeric',
   })
-  return `${fmt.format(from)} - ${fmt2.format(to)}`
+  try {
+    return `${fmt.format(from)} - ${fmt2.format(to)}`
+  } catch (e) {
+    return ''
+  }
 }
 
 export function getTimezoneDiff() {

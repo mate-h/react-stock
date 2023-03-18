@@ -1,18 +1,15 @@
 import { useMemo } from 'react'
 import { RenderContext } from '../render-context'
-import { Transform } from '../scroll'
 import { CandleResolution } from '../types'
 import { AxesText } from './text'
 
 type Props = {
   resolution: CandleResolution
   marks: number[]
-  transform: Transform
   snap?: boolean
   renderContext: RenderContext
 }
 export const TimeAxis = ({
-  transform,
   renderContext,
   resolution,
   marks,
@@ -52,15 +49,9 @@ export const TimeAxis = ({
     <>
       <div
         className="px-1 relative w-full h-6 border-t border-divider bg-well"
-        style={{
-          transformOrigin: 'top left',
-          transform: `scaleX(${transform.scale}) translateX(${
-            transform.x / transform.scale
-          }px) `,
-        }}
       >
         {snappedMarks.map((x, i) => (
-          <AxesText key={i} horizontal x={x} scale={transform.scale}>
+          <AxesText key={i} horizontal x={x}>
             {format(x)}
           </AxesText>
         ))}
